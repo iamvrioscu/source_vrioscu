@@ -1,0 +1,13 @@
+{% macro icon(name) -%}
+{%- if name == 'download' -%}
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 3v10m0 0l-4-4m4 4l4-4M4 16h12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{%- elif name == 'warn' -%}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4l9 16H3L12 4z" stroke-linejoin="round"/><path d="M12 10v4m0 3v.01" stroke-linecap="round"/></svg>
+{%- elif name == 'info' -%}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-9v.01" stroke-linecap="round"/></svg>
+{%- elif name == 'check' -%}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{%- elif name == 'windows' -%}
+<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 4.2l6.5-.9v6.2H2V4.2zm7.3-1l8.7-1.2v7.5H9.3V3.2zM2 10.5h6.5v6.2L2 15.8v-5.3zm7.3 0H18V18l-8.7-1.2v-6.3z"/></svg>
+{%- endif -%}
+{%- endmacro %}

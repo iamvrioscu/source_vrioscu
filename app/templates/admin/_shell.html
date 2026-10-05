@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from 'partials/forms.html' import csrf %}
+{% block content %}
+{% set ep = request.endpoint %}
+<div class="wrap shell">
+  <nav class="shell__nav" aria-label="Administration">
+    <ul>
+      <li><a href="{{ url_for('admin.dashboard') }}"{% if ep == 'admin.dashboard' %} aria-current="page"{% endif %}>Overview</a></li>
+      <li class="group">People</li>
+      <li><a href="{{ url_for('admin.users') }}"{% if ep == 'admin.users' %} aria-current="page"{% endif %}>Users</a></li>
+      <li><a href="{{ url_for('admin.subscribers') }}"{% if ep == 'admin.subscribers' %} aria-current="page"{% endif %}>Update subscribers</a></li>
+      <li class="group">Inbox</li>
+      <li><a href="{{ url_for('admin.feedback') }}"{% if ep == 'admin.feedback' %} aria-current="page"{% endif %}>Feedback</a></li>
+      <li><a href="{{ url_for('admin.support') }}"{% if ep == 'admin.support' %} aria-current="page"{% endif %}>Support requests</a></li>
+      <li class="group">Distribution</li>
+      <li><a href="{{ url_for('admin.releases') }}"{% if ep in ('admin.releases','admin.release_new','admin.release_edit') %} aria-current="page"{% endif %}>Releases</a></li>
+      <li><a href="{{ url_for('admin.exports') }}"{% if ep == 'admin.exports' %} aria-current="page"{% endif %}>Exports</a></li>
+    </ul>
+  </nav>
+  <div>{% block admin %}{% endblock %}</div>
+</div>
+{% endblock %}

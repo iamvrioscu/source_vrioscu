@@ -1,0 +1,73 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro error_summary(errors, labels={}) -%}
+{% if errors %}
+<div class="error-summary" role="alert" tabindex="-1" aria-labelledby="error-summary-title">
+  <h2 id="error-summary-title">Fix {{ 'this' if errors|length == 1 else 'these' }} to continue</h2>
+  <ul>{% for name, msg in errors.items() %}<li><a href="#f-{{ name }}">{{ msg }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro _err(name, errors) -%}
+{% if errors.get(name) %}<p class="field__error" id="f-{{ name }}-error">{{ errors[name] }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro _describedby(name, errors, hint) -%}
+{%- set ids = [] -%}{%- if hint %}{% set _ = ids.append('f-' ~ name ~ '-hint') %}{% endif -%}
+{%- if errors.get(name) %}{% set _ = ids.append('f-' ~ name ~ '-error') %}{% endif -%}
+{%- if ids %} aria-describedby="{{ ids|join(' ') }}"{% endif -%}
+{%- endmacro %}
+
+{% macro input(name, label, values={}, errors={}, type='text', hint=None, required=True, autocomplete=None, maxlength=None, inputmode=None, pattern=None, optional_label=True) %}
+<div class="field">
+  <label for="f-{{ name }}">{{ label }}{% if not required and optional_label %} <span class="optional">(optional)</span>{% endif %}</label>
+  {% if hint %}<p class="hint" id="f-{{ name }}-hint">{{ hint }}</p>{% endif %}
+  {{ _err(name, errors) }}
+  <input class="input" id="f-{{ name }}" name="{{ name }}" type="{{ type }}"
+    {%- if type != 'password' %} value="{{ values.get(name, '') if values.get(name) is not none else '' }}"{% endif %}
+    {%- if required %} required{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}
+    {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}{% if inputmode %} inputmode="{{ inputmode }}"{% endif %}
+    {%- if pattern %} pattern="{{ pattern }}"{% endif %}
+    {%- if errors.get(name) %} aria-invalid="true"{% endif %}{{ _describedby(name, errors, hint) }}>
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label, values={}, errors={}, hint=None, required=True, maxlength=4000) %}
+<div class="field">
+  <label for="f-{{ name }}">{{ label }}{% if not required %} <span class="optional">(optional)</span>{% endif %}</label>
+  {% if hint %}<p class="hint" id="f-{{ name }}-hint">{{ hint }}</p>{% endif %}
+  {{ _err(name, errors) }}
+  <textarea class="input" id="f-{{ name }}" name="{{ name }}" maxlength="{{ maxlength }}"{% if required %} required{% endif %}
+    {%- if errors.get(name) %} aria-invalid="true"{% endif %}{{ _describedby(name, errors, hint) }}>{{ values.get(name, '') or '' }}</textarea>
+</div>
+{% endmacro %}
+
+{% macro select(name, label, options, values={}, errors={}, hint=None, required=True, placeholder='Choose one') %}
+<div class="field">
+  <label for="f-{{ name }}">{{ label }}{% if not required %} <span class="optional">(optional)</span>{% endif %}</label>
+  {% if hint %}<p class="hint" id="f-{{ name }}-hint">{{ hint }}</p>{% endif %}
+  {{ _err(name, errors) }}
+  <select class="input" id="f-{{ name }}" name="{{ name }}"{% if required %} required{% endif %}
+    {%- if errors.get(name) %} aria-invalid="true"{% endif %}{{ _describedby(name, errors, hint) }}>
+    <option value="">{{ placeholder }}</option>
+    {% for opt in options %}
+      {% if opt is string %}{% set val, text = opt, opt %}{% else %}{% set val, text = opt[0], opt[1] %}{% endif %}
+      <option value="{{ val }}"{% if (values.get(name) or '')|string == val|string %} selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% endmacro %}
+
+{% macro checkbox(name, label, values={}, errors={}, hint=None, checked=None) %}
+<div class="field">
+  {{ _err(name, errors) }}
+  <label class="check" for="f-{{ name }}">
+    <input type="checkbox" id="f-{{ name }}" name="{{ name }}" value="1"
+      {%- set is_on = checked if checked is not none else (values.get(name) in ('1', 1, True, 'on')) %}
+      {%- if is_on %} checked{% endif %}
+      {%- if errors.get(name) %} aria-invalid="true"{% endif %}>
+    <span>{{ label }}{% if hint %}<span class="hint">{{ hint }}</span>{% endif %}</span>
+  </label>
+</div>
+{% endmacro %}

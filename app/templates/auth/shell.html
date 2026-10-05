@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+{% set ep = request.endpoint %}
+<div class="wrap shell">
+  <nav class="shell__nav" aria-label="Account">
+    <ul>
+      {% for e, label in [('account.profile','Profile'),('account.password','Password'),('account.feedback','Feedback'),('account.data','Your data'),('account.delete','Delete account')] %}
+      <li><a href="{{ url_for(e) }}"{% if ep == e %} aria-current="page"{% endif %}>{{ label }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <div>{% block account %}{% endblock %}</div>
+</div>
+{% endblock %}

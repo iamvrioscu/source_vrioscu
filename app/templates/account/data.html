@@ -1,0 +1,17 @@
+{% extends 'account/_shell.html' %}
+{% from 'partials/forms.html' import csrf %}
+{% block account %}
+<div class="shell__head"><div><h1>Your data</h1><p>What this website holds about you, and how to get a copy.</p></div></div>
+<div class="panel">
+  <h2>Download your data</h2>
+  <p>An Excel file with your profile, product-update choice, consent history, feedback and support messages. It never includes your password or session details.</p>
+  <form class="form" method="post" action="{{ url_for('account.export_own') }}">
+    {{ csrf() }}
+    <div class="btn-row"><button class="btn" type="submit">Download my data (.xlsx)</button></div>
+  </form>
+</div>
+<div class="panel">
+  <h2>What isn't here</h2>
+  <p>Validation runs, screenshots, network details and reports from the desktop application are never sent to this website, so they aren't part of this export. See the <a href="{{ url_for('public.privacy') }}">privacy notice</a>.</p>
+</div>
+{% endblock %}

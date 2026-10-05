@@ -1,0 +1,15 @@
+{% extends 'account/_shell.html' %}
+{% from 'partials/forms.html' import csrf, input, error_summary %}
+{% block account %}
+<div class="shell__head"><div><h1>Delete account</h1><p>This can't be undone.</p></div></div>
+<div class="panel">
+  <h2>What gets deleted</h2>
+  <p>Your profile, product-update choice, consent history, sessions, feedback and any support messages sent while signed in. You'll be signed out immediately. The desktop application keeps working.</p>
+  <form class="form form--narrow" method="post" action="{{ url_for('account.delete') }}" data-confirm="Delete your account permanently?" novalidate>
+    {{ csrf() }}
+    {{ error_summary(errors) }}
+    {{ input('password', 'Enter your password to confirm', {}, errors, type='password', autocomplete='current-password', maxlength=128) }}
+    <div class="btn-row"><button class="btn btn--danger" type="submit">Delete my account</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>Privacy</h1>
+  <p class="lede">What this website collects, why, and how long it keeps it. Notice version {{ product.privacy_notice_version }}.</p>
+</div></header>
+<section class="section"><div class="wrap split">
+  <div class="prose">
+    <h2>What this notice covers</h2>
+    <p>This notice covers the {{ product.name }} website at {{ product.website_url }}. It doesn't cover the {{ product.name }} Windows application. Validation runs, screenshots, network information and reports created by the desktop application aren't sent to this website.</p>
+
+    <h2>Account information</h2>
+    <p>If you create an account, we store:</p>
+    <ul>
+      <li>Your username and email address, required to sign in and to contact you about your account</li>
+      <li>Your password, stored only as a one-way salted hash. We can't see or recover it.</li>
+      <li>Optionally, your first name, last name, country and main use, to understand who uses {{ product.name }}</li>
+      <li>When your account was created and when you last signed in</li>
+      <li>A record that you acknowledged this privacy notice, and which version</li>
+    </ul>
+    <p>We use this information to provide your account. It's needed for the account to work and isn't used for anything else.</p>
+
+    <h2>Product updates (optional)</h2>
+    <p>You can choose to receive emails about new {{ product.name }} releases. This is off unless you turn it on, it's separate from your account, and you can turn it off at any time in your account settings. We keep a dated record of each time you change this choice.</p>
+
+    <h2>Feedback and support messages</h2>
+    <p>If you send feedback or contact support, we store what you send: your message, the topic or category you chose, and, for support, the name and email you gave so we can reply. Please don't include passwords or other secrets.</p>
+
+    <h2>Sign-in sessions and security</h2>
+    <p>When you sign in, the website sets a cookie containing a random session identifier. We store a hash of that identifier, its creation time, last activity and expiry. Sessions end when you sign out, after a period of inactivity, or after a fixed maximum time.</p>
+    <p>To protect forms from abuse, the website sets a short-lived security cookie and counts recent requests. Those counters are keyed by a keyed hash of your IP address, not the address itself, and are deleted automatically within a day.</p>
+    <p>The website uses only these essential cookies. It doesn't use advertising or analytics cookies, and doesn't load third-party tracking scripts.</p>
+
+    <h2>Downloads</h2>
+    <p>We count how many times each installer is downloaded per day. These counts aren't linked to you or your IP address.</p>
+
+    <h2>Server logs</h2>
+    <p>Like most websites, the server records technical logs of requests, such as the time, page requested and response status, to keep the service running and investigate problems. Logs never contain passwords or session identifiers.</p>
+
+    <h2>Who can see your information</h2>
+    <p>Only authorised {{ product.name }} administrators can view account, feedback and support records, and every administrative export is logged. We don't sell your information.</p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li>Change your profile and product-update choice in <a href="{{ url_for('account.profile') }}">your account</a>.</li>
+      <li>Download a copy of the data the website holds about you from <a href="{{ url_for('account.data') }}">Your data</a>.</li>
+      <li>Delete your account, along with its feedback and linked support messages, from your account settings.</li>
+    </ul>
+
+    <h2>Retention</h2>
+    <p>Account information is kept until you delete your account. Expired sessions are removed automatically. Support messages sent without an account are kept for as long as needed to handle the request and keep a reasonable support history.</p>
+
+    <h2>Contact</h2>
+    {% if product.privacy_email %}
+    <p>For privacy questions or requests, email <a href="mailto:{{ product.privacy_email }}">{{ product.privacy_email }}</a>.</p>
+    {% else %}
+    <p>For privacy questions or requests, use the <a href="{{ url_for('public.contact') }}">contact form</a> and choose "Privacy or data request".</p>
+    {% endif %}
+
+    <h2>Changes</h2>
+    <p>If this notice changes, the version shown at the top of this page changes with it.</p>
+  </div>
+  <aside class="split__aside aside-box" aria-label="Summary">
+    <h2>In short</h2>
+    <ul>
+      <li>Your validation data stays with the desktop app and isn't sent here.</li>
+      <li>Product-update emails are opt-in.</li>
+      <li>Essential cookies only, no third-party tracking.</li>
+      <li>Export or delete your data any time.</li>
+    </ul>
+  </aside>
+</div></section>
+{% endblock %}

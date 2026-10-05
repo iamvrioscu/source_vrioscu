@@ -1,0 +1,31 @@
+{% extends 'admin/_shell.html' %}
+{% from 'partials/forms.html' import csrf, input, select, checkbox, error_summary %}
+{% block admin %}
+<div class="shell__head"><div><p class="crumb"><a href="{{ url_for('admin.releases') }}">Releases</a></p><h1>{{ 'Edit release ' ~ release.version if release else 'Add release' }}</h1>
+<p>The installer must already be hosted at an HTTPS address. This site never hosts or runs executables.</p></div></div>
+<div class="panel">
+  <form class="form" method="post" novalidate>
+    {{ csrf() }}
+    {{ error_summary(errors) }}
+    <div class="form-row">
+      {{ input('version', 'Version', values, errors, maxlength=40, hint='Semantic version, for example 1.0.1') }}
+      {{ select('channel', 'Channel', channels, values, errors) }}
+    </div>
+    <div class="form-row">
+      {{ input('release_date', 'Release date', values, errors, type='date', maxlength=10) }}
+      {{ input('minimum_supported_version', 'Minimum supported version', values, errors, required=False, maxlength=40, hint='Older versions are told to update.') }}
+    </div>
+    {{ input('download_url', 'Download URL', values, errors, type='url', maxlength=500, hint='Public https:// address of the installer.') }}
+    {{ input('release_notes_url', 'Release notes URL', values, errors, type='url', required=False, maxlength=500) }}
+    <div class="form-row">
+      {{ input('installer_filename', 'Installer file name', values, errors, maxlength=124, hint='For example VRIOSCU-Setup-1.0.1.exe') }}
+      {{ input('file_size_bytes', 'File size in bytes', values, errors, inputmode='numeric', maxlength=12) }}
+    </div>
+    {{ input('sha256', 'SHA-256', values, errors, maxlength=64, hint='64 hexadecimal characters, from Get-FileHash -Algorithm SHA256.') }}
+    {{ checkbox('is_signed', 'The installer is Authenticode-signed', values, errors, hint='Tick only if the file actually carries a valid digital signature. This is shown publicly.') }}
+    {{ checkbox('is_mandatory', 'Required update', values, errors, hint='The release API tells older versions they must update.') }}
+    {{ checkbox('is_published', 'Published', values, errors, hint='Public Beta and Stable releases become visible on the download page.') }}
+    <div class="btn-row"><button class="btn" type="submit">{{ 'Save release' if release else 'Add release' }}</button><a class="btn btn--quiet" href="{{ url_for('admin.releases') }}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

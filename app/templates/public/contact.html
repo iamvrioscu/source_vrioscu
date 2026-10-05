@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% from 'partials/forms.html' import csrf, input, select, textarea, error_summary %}
+{% from 'partials/icons.html' import icon %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>Contact and support</h1>
+  <p class="lede">Questions about installing {{ product.name }}, your website account, reports or privacy. Messages go to the {{ product.name }} team.</p>
+</div></header>
+<section class="section"><div class="wrap split">
+  <div>
+    {% if sent %}
+    <div class="notice notice--pass" role="status">{{ icon('check') }}<div><h2>Message sent</h2><p>Thanks. We've received your message and will reply to the email address you gave.</p></div></div>
+    {% else %}
+    <div class="panel">
+      <h2>Send a message</h2>
+      <p>All fields are required. Don't include passwords or other secrets.</p>
+      <form class="form" method="post" action="{{ url_for('public.contact') }}" novalidate>
+        {{ csrf() }}
+        {{ error_summary(errors) }}
+        <div class="form-row">
+          {{ input('name', 'Name', values, errors, autocomplete='name', maxlength=120) }}
+          {{ input('email', 'Email address', values, errors, type='email', autocomplete='email', maxlength=254) }}
+        </div>
+        {{ select('topic', 'Topic', SUPPORT_TOPICS, values, errors) }}
+        {{ textarea('message', 'Message', values, errors, hint='Include your ' ~ product.name ~ ' version and what you expected to happen.') }}
+        <div class="hp" aria-hidden="true"><label for="f-website">Leave this empty</label><input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="btn-row"><button class="btn" type="submit">Send message</button></div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  <aside class="split__aside aside-box" aria-label="Other ways to get help">
+    <h2>Before you write</h2>
+    <ul>
+      <li><a href="{{ url_for('public.documentation') }}#install">Installation guide</a></li>
+      <li><a href="{{ url_for('public.download') }}#verify">Verifying the checksum</a></li>
+      <li><a href="{{ url_for('public.documentation') }}#report">Reading the report</a></li>
+    </ul>
+    {% if product.support_email or product.privacy_email or product.general_email %}
+    <h2>Email</h2>
+    <dl class="facts">
+      {% if product.support_email %}<div><dt>Support</dt><dd><a href="mailto:{{ product.support_email }}">{{ product.support_email }}</a></dd></div>{% endif %}
+      {% if product.privacy_email %}<div><dt>Privacy</dt><dd><a href="mailto:{{ product.privacy_email }}">{{ product.privacy_email }}</a></dd></div>{% endif %}
+      {% if product.general_email %}<div><dt>General</dt><dd><a href="mailto:{{ product.general_email }}">{{ product.general_email }}</a></dd></div>{% endif %}
+    </dl>
+    {% endif %}
+    <p>Using {{ product.name }} already? <a href="{{ url_for('account.feedback') }}">Product feedback</a> goes straight to the team.</p>
+  </aside>
+</div></section>
+{% endblock %}

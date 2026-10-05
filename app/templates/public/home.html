@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% from 'partials/icons.html' import icon %}
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div>
+      <h1 class="hero__id" id="hero-title"><span class="wordmark">{{ product.name }}</span> <span class="positioning">{{ product.positioning }}</span></h1>
+      <p class="hero__tagline"><span>Validate.</span> <span>Capture.</span> <span>Document.</span></p>
+      <p class="hero__copy">{{ product.name }} helps technical teams validate web endpoints, capture structured visual evidence, and generate professional technical reports from repeatable validation runs.</p>
+      <div class="btn-row">
+        <a class="btn btn--large" href="{{ url_for('public.download') }}">{{ icon('download') }}Download {{ product.name }}</a>
+        {% if current_user %}
+        <a class="btn btn--large btn--on-ink" href="{{ url_for('account.profile') }}">Your account</a>
+        {% else %}
+        <a class="btn btn--large btn--on-ink" href="{{ url_for('auth.login') }}">Login</a>
+        {% endif %}
+      </div>
+      <p class="hero__meta">Version {{ product.version }}{% if product.public_beta %}, {{ product.channel_label }}{% endif %}. Windows desktop application.</p>
+    </div>
+    {% include 'partials/report_stack.html' %}
+  </div>
+</section>
+
+<section class="flow" aria-label="How a validation run flows">
+  <div class="wrap">
+    <ol class="flow__list">
+      <li class="flow__step"><span class="flow__num">01</span><h2 class="flow__name">Endpoint</h2><p class="flow__desc">The web addresses you need to prove are working.</p></li>
+      <li class="flow__step"><span class="flow__num">02</span><h2 class="flow__name">Validation</h2><p class="flow__desc">A repeatable run checks reachability and technical health.</p></li>
+      <li class="flow__step"><span class="flow__num">03</span><h2 class="flow__name">Evidence</h2><p class="flow__desc">Screenshots and technical details are captured as the run executes.</p></li>
+      <li class="flow__step"><span class="flow__num">04</span><h2 class="flow__name">Report</h2><p class="flow__desc">Everything is assembled into a professional PDF you can hand over.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="cap-title">
+  <div class="wrap">
+    <div class="section__head">
+      <h2 id="cap-title">Four jobs, one run</h2>
+      <p>Each validation run does the same four things in the same order, so results are comparable from one site, change or week to the next.</p>
+    </div>
+    <div class="capabilities">
+      <article class="capability">
+        <h3 class="capability__name">Validate</h3>
+        <p class="capability__lead">Check endpoint reachability and technical health.</p>
+        <p class="capability__detail">Run the same list of endpoints the same way every time, from the machine and network you are actually testing.</p>
+      </article>
+      <article class="capability">
+        <h3 class="capability__name">Capture</h3>
+        <p class="capability__lead">Collect high-quality visual evidence with configurable capture options.</p>
+        <p class="capability__detail">Screenshots are taken as part of the run, so the evidence matches the results it sits next to.</p>
+      </article>
+      <article class="capability">
+        <h3 class="capability__name">Analyze</h3>
+        <p class="capability__lead">Organise structured technical evidence, with optional AI Validation Insights.</p>
+        <p class="capability__detail">AI Validation Insights are optional. Runs and reports work without them.</p>
+      </article>
+      <article class="capability">
+        <h3 class="capability__name">Document</h3>
+        <p class="capability__lead">Generate a professional technical PDF report.</p>
+        <p class="capability__detail">Cover, environment, network details, summary, metrics and evidence in one document.</p>
+      </article>
+    </div>
+    <p class="btn-row"><a class="btn btn--quiet" href="{{ url_for('public.features') }}">See all features</a></p>
+  </div>
+</section>
+
+<section class="section section--ink" aria-labelledby="split-title">
+  <div class="wrap">
+    <div class="section__head">
+      <h2 id="split-title">The desktop app does the validation. This website supports it.</h2>
+      <p>Validation runs on Windows, where {{ product.name }} can read the machine and network it is testing. A web browser deliberately can't, so this site never pretends to.</p>
+    </div>
+    <div class="tracks">
+      <div class="track track--primary">
+        <div class="track__who"><h3>Windows application</h3><p>Runs on the machine under test</p></div>
+        <ol class="track__steps"><li>Validate</li><li>Capture</li><li>Analyze</li><li>Document</li></ol>
+      </div>
+      <div class="track track--secondary">
+        <div class="track__who"><h3>vrioscu.com</h3><p>Account, distribution and help</p></div>
+        <ol class="track__steps"><li>Discover</li><li>Explain</li><li>Authenticate</li><li>Support</li><li>Distribute</li></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if product.public_beta %}
+<section class="section section--tight" aria-labelledby="beta-title">
+  <div class="wrap">
+    <div class="notice">
+      {{ icon('info') }}
+      <div>
+        <h2 id="beta-title">{{ product.name }} {{ product.version }} is a Public Beta</h2>
+        <p>{% if not product.installer_signed %}This installer isn't digitally signed yet, so Windows may warn that the publisher is unrecognised. Check the SHA-256 checksum on the download page before you run it, and follow your organisation's software policy.{% else %}Features may change before the stable release. Your feedback shapes what comes next.{% endif %}</p>
+        <div class="btn-row"><a class="btn btn--quiet btn--small" href="{{ url_for('public.public_beta') }}">About the Public Beta</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section--ink" aria-labelledby="cta-title">
+  <div class="wrap cta">
+    <div>
+      <h2 id="cta-title">Run your first validation</h2>
+      <p>Download the Windows installer, verify the checksum, and generate a report from your own endpoints.</p>
+    </div>
+    <div class="btn-row">
+      <a class="btn btn--large" href="{{ url_for('public.download') }}">{{ icon('download') }}Download {{ product.name }}</a>
+      <a class="btn btn--large btn--on-ink" href="{{ url_for('public.how_it_works') }}">How it works</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

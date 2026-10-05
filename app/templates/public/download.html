@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% from 'partials/icons.html' import icon %}
+{% set fname = (release.installer_filename if release and release.installer_filename else 'VRIOSCU-Setup.exe') %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>Download {{ product.name }}</h1>
+  <p class="lede">The Windows installer for {{ product.name }}. Verify the checksum before you run it.</p>
+</div></header>
+
+<section class="section"><div class="wrap">
+  <div class="release-panel">
+    <div class="release-panel__main">
+      <p><span class="badge badge--beta">{{ {'PUBLIC_BETA':'Public Beta','STABLE':'Stable'}.get(release.channel if release else product.channel, product.channel_label) }}</span></p>
+      <h2>{{ product.name }} for Windows</h2>
+      <p class="version">Version {{ release.version if release else product.version }}{% if release and release.release_date %}, released {{ release.release_date }}{% endif %}</p>
+      {% if release %}
+        <div class="btn-row">
+          <a class="btn btn--large" href="{{ url_for('public.download_release', release_id=release.id) if release.id else url_for('public.download_latest') }}">{{ icon('windows') }}Download installer</a>
+          {% if release.release_notes_url %}<a class="btn btn--large btn--quiet" href="{{ release.release_notes_url }}" rel="noopener">Release notes</a>{% endif %}
+        </div>
+      {% else %}
+        <div class="notice notice--info">{{ icon('info') }}<div>
+          <h3>The installer hasn't been published yet</h3>
+          <p>The download link and checksum will appear here as soon as the {{ product.version }} installer is available.{% if not current_user %} Create an account and opt in to product updates to hear when it's ready.{% endif %}</p>
+          {% if not current_user %}<div class="btn-row"><a class="btn btn--small" href="{{ url_for('auth.register') }}">Create an account</a></div>{% endif %}
+        </div></div>
+      {% endif %}
+    </div>
+    <div class="release-panel__facts">
+      <dl class="facts">
+        <div><dt>Compatibility</dt><dd>{{ product.windows_compatibility }}</dd></div>
+        <div><dt>Status</dt><dd>{{ product.channel_label if product.public_beta else 'Released' }}</dd></div>
+        <div><dt>Digital signature</dt><dd>{% if release and release.is_signed %}<span class="badge badge--pass">Signed</span>{% else %}<span class="badge badge--warn">Not signed yet</span> <a href="{{ url_for('public.public_beta') }}#signing">What this means</a>{% endif %}</dd></div>
+        {% if release %}
+        {% if release.installer_filename %}<div><dt>File</dt><dd><code>{{ release.installer_filename }}</code>{% if release.file_size_bytes %}, {{ release.file_size_bytes|human_size }}{% endif %}</dd></div>{% endif %}
+        {% if release.sha256 %}
+        <div><dt>SHA-256</dt><dd class="hash"><code id="sha256">{{ release.sha256 }}</code><button class="btn btn--quiet btn--small" type="button" data-copy="sha256" hidden>Copy</button></dd></div>
+        {% endif %}
+        {% if release.minimum_supported_version %}<div><dt>Minimum supported version</dt><dd>{{ release.minimum_supported_version }}</dd></div>{% endif %}
+        {% else %}
+        <div><dt>SHA-256</dt><dd>Published with the installer</dd></div>
+        {% endif %}
+      </dl>
+    </div>
+  </div>
+</div></section>
+
+<section class="section section--surface" aria-labelledby="install-title"><div class="wrap split">
+  <div class="prose">
+    <h2 id="install-title">Install {{ product.name }}</h2>
+    <ol>
+      <li>Download the installer from this page. Don't use copies from other sites or shared drives you can't verify.</li>
+      <li>Verify the SHA-256 checksum (below). Continue only if it matches exactly.</li>
+      <li>Run the installer and follow the prompts.</li>
+      <li>Open {{ product.name }} and follow the <a href="{{ url_for('public.documentation') }}#first-run">first-run guide</a>.</li>
+    </ol>
+    <h3 id="verify">Verify the checksum</h3>
+    <p>In PowerShell, from the folder you downloaded to, run:</p>
+    <div class="codeblock"><code id="hash-cmd">Get-FileHash -Algorithm SHA256 .\{{ fname }}</code><button class="btn btn--on-ink btn--small" type="button" data-copy="hash-cmd" hidden>Copy</button></div>
+    <p>Compare the <code>Hash</code> value with the SHA-256 above. Letter case doesn't matter. If anything differs, delete the file and download it again.</p>
+    {% if not (release and release.is_signed) %}
+    <h3>If Windows shows a warning</h3>
+    <p>This {{ product.channel_label }} installer isn't digitally signed yet, so Windows may say the publisher is unrecognised, and managed devices may block it entirely. Don't disable SmartScreen, Smart App Control, Defender or any other security control to get past this. If your device is managed by an organisation, ask your IT team to review and approve the installer.</p>
+    {% endif %}
+  </div>
+  <aside class="split__aside aside-box">
+    <h2>Need help?</h2>
+    <p>Installation problems, blocked downloads or checksum mismatches.</p>
+    <p><a href="{{ url_for('public.contact') }}">Contact support</a></p>
+  </aside>
+</div></section>
+
+{% if history %}
+<section class="section" aria-labelledby="history-title"><div class="wrap">
+  <h2 id="history-title" class="visually-hidden">Release history</h2>
+  <div class="table-wrap"><table>
+    <caption>Release history</caption>
+    <thead><tr><th scope="col">Version</th><th scope="col">Channel</th><th scope="col">Released</th><th scope="col">Signed</th><th scope="col">SHA-256</th><th scope="col"><span class="visually-hidden">Links</span></th></tr></thead>
+    <tbody>
+    {% for r in history %}
+      <tr>
+        <td>{{ r.version }}{% if r.is_mandatory %} <span class="badge badge--warn">Required update</span>{% endif %}</td>
+        <td>{{ {'PUBLIC_BETA':'Public Beta','STABLE':'Stable'}[r.channel] }}</td>
+        <td>{{ r.release_date }}</td>
+        <td>{{ 'Yes' if r.is_signed else 'No' }}</td>
+        <td><code>{{ r.sha256[:16] }}…</code></td>
+        <td><a href="{{ url_for('public.download_release', release_id=r.id) }}">Download<span class="visually-hidden"> {{ r.version }}</span></a>{% if r.release_notes_url %} | <a href="{{ r.release_notes_url }}" rel="noopener">Notes</a>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div></section>
+{% endif %}
+{% endblock %}

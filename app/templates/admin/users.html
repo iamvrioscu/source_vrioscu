@@ -1,0 +1,39 @@
+{% extends 'admin/_shell.html' %}
+{% block admin %}
+<div class="shell__head"><div><h1>Users</h1><p>{{ total }} account{{ '' if total == 1 else 's' }}{% if q %} matching "{{ q }}"{% endif %}.</p></div>
+  <form class="search" method="get" action="{{ url_for('admin.users') }}" role="search">
+    <label class="visually-hidden" for="q">Search users</label>
+    <input class="input" id="q" name="q" type="search" value="{{ q }}" placeholder="Username, email or name" maxlength="100">
+    <button class="btn btn--quiet" type="submit">Search</button>
+  </form>
+</div>
+{% if users %}
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col">User</th><th scope="col">Name</th><th scope="col">Country</th><th scope="col">Main use</th><th scope="col">Updates</th><th scope="col">Joined</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td><strong>{{ u.username }}</strong>{% if u.role == 'admin' %} <span class="badge badge--beta">Admin</span>{% endif %}<br><span class="hint">{{ u.email }}</span></td>
+      <td>{{ (u.first_name ~ ' ' ~ u.last_name).strip() or '—' }}</td>
+      <td>{{ u.country or '—' }}</td>
+      <td>{{ u.purpose|label_for(PURPOSES) if u.purpose else '—' }}</td>
+      <td>{{ 'Yes' if u.product_updates else 'No' }}</td>
+      <td>{{ u.created_at|date }}</td>
+      <td>{% if u.is_active %}<span class="badge badge--pass">Active</span>{% else %}<span class="badge badge--danger">Disabled</span>{% endif %}</td>
+      <td>{% if u.id != current_user.id %}
+        <form class="inline-form" method="post" action="{{ url_for('admin.user_status', user_id=u.id) }}"{% if u.is_active %} data-confirm="Disable {{ u.username }}? They'll be signed out immediately."{% endif %}>
+          {{ csrf() }}<input type="hidden" name="active" value="{{ '0' if u.is_active else '1' }}"><input type="hidden" name="q" value="{{ q }}">
+          <button class="btn btn--quiet btn--small" type="submit">{{ 'Disable' if u.is_active else 'Enable' }}<span class="visually-hidden"> {{ u.username }}</span></button>
+        </form>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+<div class="pager"><span>Page {{ page }} of {{ pages }}</span><span class="btn-row">
+  {% if page > 1 %}<a class="btn btn--quiet btn--small" href="{{ url_for('admin.users', q=q or None, page=page-1) }}">Previous page</a>{% endif %}
+  {% if page < pages %}<a class="btn btn--quiet btn--small" href="{{ url_for('admin.users', q=q or None, page=page+1) }}">Next page</a>{% endif %}
+</span></div>
+{% else %}
+<div class="table-wrap"><div class="empty"><p>{% if q %}No accounts match "{{ q }}". Try a shorter search.{% else %}No accounts yet. They'll appear here as people register.{% endif %}</p></div></div>
+{% endif %}
+{% endblock %}

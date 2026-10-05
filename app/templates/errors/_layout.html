@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% set noindex = True %}
+{% block content %}
+<section class="error-page"><div class="wrap">
+  <p class="code">Error {{ code }}{% if request_id %}, reference {{ request_id }}{% endif %}</p>
+  <h1>{% block heading %}{% endblock %}</h1>
+  <p>{{ message }}</p>
+  <div class="btn-row">{% block actions %}<a class="btn" href="{{ url_for('public.home') }}">Go to the home page</a><a class="btn btn--quiet" href="{{ url_for('public.contact') }}">Contact support</a>{% endblock %}</div>
+</div></section>
+{% endblock %}

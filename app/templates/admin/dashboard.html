@@ -1,0 +1,32 @@
+{% extends 'admin/_shell.html' %}
+{% block admin %}
+<div class="shell__head"><div><h1>Overview</h1><p>Website activity and application status.</p></div></div>
+<dl class="stats">
+  <div class="stat"><dt>Accounts</dt><dd><a href="{{ url_for('admin.users') }}">{{ stats.users }}</a></dd></div>
+  <div class="stat"><dt>Update subscribers</dt><dd><a href="{{ url_for('admin.subscribers') }}">{{ stats.subscribers }}</a></dd></div>
+  <div class="stat"><dt>New feedback</dt><dd><a href="{{ url_for('admin.feedback', status='new') }}">{{ stats.feedback_new }}</a></dd></div>
+  <div class="stat"><dt>New support requests</dt><dd><a href="{{ url_for('admin.support', status='new') }}">{{ stats.support_new }}</a></dd></div>
+  <div class="stat"><dt>Active sessions</dt><dd>{{ stats.sessions }}</dd></div>
+  <div class="stat"><dt>Published releases</dt><dd><a href="{{ url_for('admin.releases') }}">{{ stats.releases_published }}</a></dd></div>
+</dl>
+<div class="panel">
+  <h2>Application status</h2>
+  <dl class="kv">
+    <dt>Environment</dt><dd>{{ status.environment }}</dd>
+    <dt>HTTPS</dt><dd>{% if status.https %}<span class="badge badge--pass">Enabled</span>{% else %}<span class="badge badge--warn">Not enabled</span>{% endif %}</dd>
+    <dt>Database file</dt><dd><code>{{ status.database }}</code></dd>
+    <dt>Migrations applied</dt><dd>{{ status.migrations|join(', ') }}</dd>
+    <dt>Trusted proxies</dt><dd>{{ status.proxy_count }}</dd>
+    <dt>Product version</dt><dd>{{ product.version }} ({{ product.channel_label }})</dd>
+  </dl>
+</div>
+<div class="panel">
+  <h2>Recent administrative activity</h2>
+  {% if audit %}
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">When (UTC)</th><th scope="col">Who</th><th scope="col">Action</th><th scope="col">Target</th></tr></thead>
+    <tbody>{% for a in audit %}<tr><td>{{ a.created_at|datetime }}</td><td>{{ a.actor or 'System' }}</td><td><code>{{ a.action }}</code></td><td>{{ a.target }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p>No administrative actions yet.</p>{% endif %}
+</div>
+{% endblock %}

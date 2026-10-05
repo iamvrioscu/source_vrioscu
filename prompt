@@ -1,0 +1,502 @@
+VRIOSCU --- MASTER AI CODE AGENT PROMPT FOR THE OFFICIAL WEBSITE
+You are the lead full-stack architect, security engineer, backend
+engineer, frontend engineer, UI/UX designer, DevOps engineer and QA
+engineer responsible for building the official VRIOSCU website.
+Build a real, production-oriented full-stack web application --- not a
+static mockup.
+1. Product context
+VRIOSCU is a Windows desktop application positioned as:
+Endpoint Validation & Evidence Capture
+Tagline:
+Validate. Capture. Document.
+The desktop product validates web endpoints, captures visual evidence,
+collects relevant technical execution/network information, optionally
+provides AI Validation Insights, and generates professional technical
+PDF reports.
+The website is the official public/account platform for the product.
+Official website:
+https://vrioscu.com
+2. Critical architecture boundary
+Do NOT turn the website into a fake browser-only replacement for the
+desktop validation engine.
+The Windows desktop application remains the primary local technical
+execution product.
+The website is responsible for:
+- Product presentation
+- Documentation
+- Public Beta information
+- Download
+- Login
+- User profile
+- Support/contact
+- Feedback
+- Release/update information
+- Authorized administration
+- Data export
+- API-backed website functionality
+The website must never claim that ordinary browser JavaScript can
+collect private machine/network information that browsers intentionally
+restrict.
+The desktop application can collect evidence such as hostname, local IP,
+gateway, DNS, SSID, signal strength, frequency/channel and NIC/radio
+information. The website must not pretend to collect these from a normal
+browser.
+3. Required public pages
+Implement at minimum:
+1. Home
+2. Product
+3. Features
+4. How It Works
+5. Use Cases
+6. Public Beta
+7. Download
+8. Documentation
+9. Login
+10. Privacy
+11. Contact/Support
+4. Home page
+Hero:
+VRIOSCU
+Endpoint Validation & Evidence Capture
+Validate. Capture. Document.
+Supporting copy:
+VRIOSCU helps technical teams validate web endpoints, capture structured
+visual evidence, and generate professional technical reports from
+repeatable validation runs.
+Primary CTA:
+Download VRIOSCU
+Secondary CTA:
+Login
+Visually communicate:
+Endpoint → Validation → Evidence → Report
+5. Product and feature pages
+Explain the four real product capabilities:
+VALIDATE
+Endpoint reachability and technical health.
+CAPTURE
+High-quality visual evidence with configurable capture options.
+ANALYZE
+Structured technical evidence and optional AI Validation Insights.
+DOCUMENT
+Professional technical reports.
+Do not invent additional capabilities.
+6. How It Works
+Present:
+1. Configure validation
+2. Enter target endpoints
+3. Run validation
+4. Capture visual evidence
+5. Analyze collected evidence
+6. Generate technical report
+7. Review report
+Use professional technical diagrams.
+7. Report presentation
+Use the real VRIOSCU PDF/report as the visual and content reference.
+The report includes:
+- Branded VRIOSCU cover
+- Test/environment information
+- Network environment
+- Validation summary
+- Endpoint technical metrics
+- Visual evidence
+- Optional AI Validation Insights
+Do not invent fake screenshots, statistics or metrics.
+8. Download
+Create a prominent Download VRIOSCU section.
+Show:
+- Current version
+- Windows compatibility
+- Public Beta status
+- Release notes
+- Installer download
+- SHA-256/checksum
+- Installation guidance
+Download URLs must be configurable and must not point to a developer's
+local machine.
+Never instruct users to disable Windows security controls.
+9. Login
+Implement real authentication.
+Requirements:
+- Secure login
+- Secure sessions
+- Logout
+- Session expiration
+- Server-side authorization
+- Rate limiting
+- Secure cookies
+- Secure password hashing if local passwords are used
+- Production-safe error handling
+Never store plaintext passwords or expose password hashes.
+10. User profile
+Support appropriate profile fields such as:
+- Username
+- Email
+- First name
+- Last name
+- Country
+- Purpose/use case
+- Product-update preference
+Product updates must be optional and separate from required
+account/profile processing.
+Follow data minimization.
+11. Backend API
+Build a real backend API with:
+- Authentication
+- Authorization
+- Input validation
+- Output validation
+- Rate limiting
+- Structured errors
+- Secure CORS policy
+- CSRF protection where applicable
+- Safe logging
+- No arbitrary command execution
+- No unsafe file access
+- No path traversal
+- No SQL injection
+- No unsafe deserialization
+All production communication must use HTTPS.
+12. Database requirement
+I do NOT want a separately managed database service for the initial
+website.
+Use:
+SQLite
+Requirements:
+- Persistent SQLite database file
+- Proper schema/migrations
+- Transactions
+- Repository/data-access abstraction
+- Safe filesystem permissions
+- Database outside public/static directories
+- Backup documentation
+Design the persistence layer so SQLite can later be replaced with
+PostgreSQL without rewriting the frontend/business logic.
+Do not expose SQLite through HTTP.
+13. Suggested data model
+Create appropriate models/tables for:
+- Users
+- Sessions/authentication
+- Consent
+- Product update preferences
+- Feedback
+- Support/contact submissions
+- Release metadata
+- Download metadata where required
+Only store data required by actual features.
+14. Admin area
+Create a secure admin area.
+Possible authorized functions:
+- View users
+- View feedback
+- View support submissions
+- Manage release metadata
+- Manage download metadata
+- Export authorized records
+- Review product-update preferences
+- View appropriate application status
+Every admin action must be authorized server-side.
+Never rely on hiding frontend buttons for security.
+15. Excel export
+Implement authorized Excel export to:
+.xlsx
+Possible exports:
+- Users
+- Feedback
+- Support requests
+- Public Beta registrations
+- Release records
+- Other legitimate application records
+Never export:
+- Passwords
+- Password hashes
+- Session tokens
+- API keys
+- Private keys
+- Secrets
+Normal users must not be able to export other users' private
+information.
+16. Release/update management
+Create a release metadata model supporting:
+- Version
+- Release channel
+- Release date
+- Release notes URL
+- Download URL
+- Installer filename
+- SHA-256
+- File size
+- Mandatory update flag
+- Minimum supported version
+Channels:
+- PUBLIC_BETA
+- STABLE
+- INTERNAL
+- DEV
+The website must not cause arbitrary commands or executables to run.
+17. Security requirements
+Treat security as a first-class requirement.
+Implement as appropriate:
+- HTTPS-only production
+- Secure headers
+- Content Security Policy
+- HSTS
+- X-Content-Type-Options
+- Referrer-Policy
+- Frame protection
+- Secure/SameSite cookies
+- CSRF protection where applicable
+- Input validation
+- Output encoding
+- Rate limiting
+- Authentication throttling
+- Secure password hashing
+- Session invalidation
+- Server-side authorization
+- Safe file handling
+- Safe download handling
+- Dependency security
+Never:
+- Disable SmartScreen
+- Disable Smart App Control
+- Disable Defender
+- Add unnecessary firewall exclusions
+- Add antivirus exclusions
+- Install hidden services
+- Create persistence
+- Embed private keys in frontend code
+- Embed cloud credentials in frontend code
+- Bypass corporate security controls
+18. Secrets
+Use environment variables or secure server-side configuration.
+Never commit:
+- Passwords
+- API keys
+- JWT secrets
+- Private keys
+- AWS credentials
+- Admin passwords
+Create:
+.env.example
+Do not commit:
+.env
+19. AWS/EC2
+The website/backend may be deployed on the existing AWS EC2
+infrastructure.
+Keep the initial architecture simple:
+Internet → HTTPS reverse proxy → Web application → Backend API → SQLite
+Do not add RDS, Lambda, API Gateway, Kubernetes, ECS or other
+infrastructure unless there is a concrete requirement.
+20. Frontend
+Build a responsive application for:
+- Desktop
+- Laptop
+- Tablet
+- Mobile
+Use semantic HTML, accessible navigation, keyboard support, proper focus
+states, responsive layouts and optimized assets.
+21. Branding
+Official brand:
+VRIOSCU
+Never use:
+- Vristu
+- Vristu Screenshot Analysis
+- Artifact Validator
+Visual style:
+- Premium
+- Technical
+- Enterprise
+- Clean
+- Modern
+- Precise
+Avoid cyberpunk/hacker aesthetics, excessive neon, gaming UI and generic
+AI-startup design.
+22. Public Beta
+Current:
+VRIOSCU Public Beta
+Version:
+1.0.0
+The current beta may be unsigned.
+State this honestly.
+Do not claim:
+- Microsoft verified
+- Windows certified
+- Digitally signed
+unless those properties actually exist.
+Never tell users to weaken Windows security.
+23. Privacy
+Create a real Privacy page describing only actual data
+collection/storage.
+Do not claim:
+- Zero data collection
+- 100% private
+- GDPR compliant
+- SOC 2 certified
+- ISO certified
+unless verified and explicitly provided.
+Separate required account/profile processing from optional
+product-update subscription.
+24. Contact/support
+Create a professional contact/support page.
+Keep support/privacy/general contact information centralized.
+Do not invent fake email addresses. Use configurable placeholders until
+real addresses are provided.
+25. Central configuration
+Centralize:
+- Product name
+- Website URL
+- Current version
+- Release channel
+- Download URL
+- Release notes URL
+- Support email
+- Privacy contact
+- Public Beta status
+Do not scatter important product configuration across frontend files.
+26. Logging
+Use production-safe structured logging.
+Never log:
+- Passwords
+- Session tokens
+- API keys
+- Secrets
+Logs should help diagnose authentication, API, application, release and
+export problems.
+27. Error handling
+Production responses must not expose:
+- Stack traces
+- Internal filesystem paths
+- Database details
+- Credentials
+- Secrets
+Create professional error pages.
+28. Backup
+Because SQLite is used, document a safe backup/restore strategy.
+Do not expose database or backup files through the public web server.
+29. Testing
+Test:
+- Registration
+- Login
+- Logout
+- Profile
+- Authentication
+- Authorization
+- Admin authorization
+- Input validation
+- Rate limiting
+- Excel export authorization
+- Release management
+- Download metadata
+- Database operations
+- Security headers
+- Production configuration
+Verify unauthorized users cannot:
+- Access admin APIs
+- Export another user's information
+- Modify releases
+- Access private records
+- Access private files
+30. SEO
+Implement:
+- Page titles
+- Meta descriptions
+- Open Graph
+- Twitter/X metadata
+- Canonical URLs
+- robots.txt
+- sitemap.xml
+31. Performance
+Optimize:
+- Images
+- Fonts
+- JavaScript
+- CSS
+- API responses
+- Database queries
+Avoid unnecessary dependencies.
+32. Accessibility
+Use:
+- Semantic HTML
+- Labels
+- Keyboard navigation
+- Visible focus
+- Appropriate contrast
+- Meaningful alt text
+- ARIA only when necessary
+33. Do not invent product claims
+Never invent:
+- Customers
+- User counts
+- Revenue
+- Certifications
+- Awards
+- Integrations
+- Security guarantees
+- Compliance certifications
+- Performance statistics
+- Partnerships
+34. Do not break the desktop application
+If desktop source code is supplied:
+- Inspect before changing.
+- Preserve working functionality.
+- Reuse existing brand assets.
+- Do not delete working modules.
+- Do not rewrite the desktop validation engine just to build the
+  website.
+The website is an additional platform.
+35. Documentation deliverables
+Provide:
+1. Source code
+2. README
+3. Architecture document
+4. API documentation
+5. Database schema/migrations
+6. .env.example
+7. Deployment guide
+8. Security checklist
+9. Backup/restore guide
+10. Excel export documentation
+11. Release management documentation
+12. Test report
+13. Environment-variable list
+14. Production readiness checklist
+36. Final acceptance criteria
+The implementation is complete only when:
+- Home works
+- Product pages work
+- Features work
+- Documentation works
+- Public Beta page works
+- Download works
+- Login works
+- Logout works
+- Profile works
+- Admin authorization works
+- SQLite persistence works
+- Excel export works
+- Release metadata works
+- Support/contact works
+- Privacy page works
+- HTTPS-ready
+- Security headers configured
+- Rate limiting implemented
+- Secrets externalized
+- No plaintext passwords
+- No committed secrets
+- No debug mode in production
+- No fake features
+- No security bypasses
+- Responsive UI
+- Accessibility basics implemented
+- SEO basics implemented
+- Backup strategy documented
+- Deployment documentation provided
+- Tests pass
+Final instruction
+Build a real full-stack VRIOSCU companion website.
+The website should:
+Discover → Explain → Authenticate → Support → Distribute
+The Windows application should remain responsible for:
+Validate → Capture → Analyze → Document
+Do not blur these responsibilities.
+The final website must be secure, maintainable, professional, scalable
+in architecture, and faithful to the real VRIOSCU product.

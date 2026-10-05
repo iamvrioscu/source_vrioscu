@@ -1,0 +1,33 @@
+{# Shared list for feedback and support. Expects: items, statuses, status, kind ('feedback'|'support'). #}
+{% from 'partials/forms.html' import csrf %}
+<nav class="filters" aria-label="Filter by status">
+  <a href="{{ url_for('admin.' ~ kind) }}"{% if not status %} aria-current="true"{% endif %}>All</a>
+  {% for s in statuses %}<a href="{{ url_for('admin.' ~ kind, status=s) }}"{% if status == s %} aria-current="true"{% endif %}>{{ s|replace('_', ' ')|capitalize }}</a>{% endfor %}
+</nav>
+{% if items %}
+<div class="table-wrap"><table>
+  <thead><tr>{% for h in headers %}<th scope="col">{{ h }}</th>{% endfor %}<th scope="col">Message</th><th scope="col">Status</th></tr></thead>
+  <tbody>
+  {% for i in items %}
+    <tr>
+      {% if kind == 'feedback' %}
+        <td>{{ i.created_at|date }}</td><td>{{ i.username }}</td><td>{{ i.category|label_for(FEEDBACK_CATEGORIES) }}</td><td>{{ i.app_version or '—' }}</td>
+      {% else %}
+        <td>{{ i.created_at|date }}</td><td>{{ i.name }}<br><a class="hint" href="mailto:{{ i.email }}">{{ i.email }}</a></td><td>{{ i.topic|label_for(SUPPORT_TOPICS) }}</td>
+      {% endif %}
+      <td><div class="msg">{{ i.message }}</div></td>
+      <td>
+        <form class="inline-form" method="post" action="{{ url_for('admin.' ~ kind ~ '_status', item_id=i.id) }}">
+          {{ csrf() }}<input type="hidden" name="filter" value="{{ status or '' }}">
+          <label class="visually-hidden" for="st-{{ i.id }}">Status for item {{ i.id }}</label>
+          <select class="input" id="st-{{ i.id }}" name="status">{% for s in statuses %}<option value="{{ s }}"{% if s == i.status %} selected{% endif %}>{{ s|replace('_', ' ')|capitalize }}</option>{% endfor %}</select>
+          <button class="btn btn--quiet btn--small" type="submit">Update</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}
+<div class="table-wrap"><div class="empty"><p>Nothing {{ ('marked "' ~ status|replace('_',' ') ~ '"') if status else 'here yet' }}.</p></div></div>
+{% endif %}

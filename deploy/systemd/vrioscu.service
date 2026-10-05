@@ -1,0 +1,42 @@
+[Unit]
+Description=VRIOSCU website (gunicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=vrioscu
+Group=vrioscu
+WorkingDirectory=/opt/vrioscu/app
+EnvironmentFile=/etc/vrioscu/vrioscu.env
+ExecStartPre=/opt/vrioscu/venv/bin/flask --app wsgi init-db
+ExecStart=/opt/vrioscu/venv/bin/gunicorn --config deploy/gunicorn.conf.py wsgi:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=3
+UMask=0077
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/vrioscu
+
+[Install]
+WantedBy=multi-user.target

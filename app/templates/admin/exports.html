@@ -1,0 +1,15 @@
+{% extends 'admin/_shell.html' %}
+{% from 'partials/forms.html' import csrf %}
+{% block admin %}
+<div class="shell__head"><div><h1>Exports</h1><p>Excel (.xlsx) files. Passwords, password hashes, session data and secrets are never included. Every export is recorded in the activity log.</p></div></div>
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col">Dataset</th><th scope="col">Contains</th><th scope="col"><span class="visually-hidden">Export</span></th></tr></thead>
+  <tbody>
+  {% for d in datasets %}
+    <tr><td><strong>{{ d.title }}</strong></td><td>{{ d.description }}<br><span class="hint">Columns: {{ d.columns|map('last')|join(', ') }}</span></td>
+    <td><form method="post" action="{{ url_for('admin.export', dataset=d.key) }}">{{ csrf() }}<button class="btn btn--quiet btn--small" type="submit">Export<span class="visually-hidden"> {{ d.title }}</span></button></form></td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+<p class="hint export-note">Exported files contain personal data. Store them securely and delete them when you no longer need them.</p>
+{% endblock %}

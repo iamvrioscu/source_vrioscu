@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>Where repeatable evidence matters</h1>
+  <p class="lede">{{ product.name }} fits work where someone has to confirm endpoints are reachable from a specific place and keep a record that proves it.</p>
+</div></header>
+<section class="section"><div class="wrap cases">
+  <article class="case">
+    <h2>Site integration and UAT sign-off</h2>
+    <p>When a new or acquired site joins a network, the business applications people rely on need to work from that site on day one. Run the agreed endpoint list from the site and attach the report to the sign-off.</p>
+    <dl><dt>Run from</dt><dd>A machine on the site's network</dd><dt>Report shows</dt><dd>Which endpoints were reached, from where, with evidence</dd></dl>
+  </article>
+  <article class="case">
+    <h2>Post-change verification</h2>
+    <p>After a firewall rule, routing, DNS or proxy change, run the same validation you ran before the change. Two reports from identical runs make the difference easy to see.</p>
+    <dl><dt>Run from</dt><dd>The affected segment, before and after</dd><dt>Report shows</dt><dd>Results and evidence for the same endpoints</dd></dl>
+  </article>
+  <article class="case">
+    <h2>Wireless network validation</h2>
+    <p>Prove that a given SSID provides access to the services users need, with the wireless details of the connection recorded in the report's network environment section.</p>
+    <dl><dt>Run from</dt><dd>A laptop connected to the SSID under test</dd><dt>Report shows</dt><dd>SSID, signal, channel and endpoint results</dd></dl>
+  </article>
+  <article class="case">
+    <h2>Support escalations</h2>
+    <p>When a user reports that something is unreachable, a report from their machine gives the next support tier the evidence and network context up front, instead of a description.</p>
+    <dl><dt>Run from</dt><dd>The affected user's machine</dd><dt>Report shows</dt><dd>What failed, from where, with screenshots</dd></dl>
+  </article>
+</div></section>
+<section class="section section--surface"><div class="wrap">
+  <div class="notice notice--info">
+    {% from 'partials/icons.html' import icon %}{{ icon('info') }}
+    <div><h2>Have a different use?</h2><p>Tell us how you use {{ product.name }}. Public Beta feedback decides what we improve next.</p>
+    <div class="btn-row"><a class="btn btn--quiet btn--small" href="{{ url_for('account.feedback') }}">Send feedback</a></div></div>
+  </div>
+</div></section>
+{% endblock %}

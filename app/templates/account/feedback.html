@@ -1,0 +1,26 @@
+{% extends 'account/_shell.html' %}
+{% from 'partials/forms.html' import csrf, input, select, textarea, error_summary %}
+{% from 'partials/icons.html' import icon %}
+{% block account %}
+<div class="shell__head"><div><h1>Send feedback</h1><p>Goes directly to the {{ product.name }} team. For urgent problems, <a href="{{ url_for('public.contact') }}">contact support</a>.</p></div></div>
+{% if sent %}<div class="notice notice--pass flash" role="status">{{ icon('check') }}<div><h2>Feedback sent</h2><p>Thanks. It's listed below.</p></div></div>{% endif %}
+<div class="panel">
+  <form class="form" method="post" action="{{ url_for('account.feedback') }}" novalidate>
+    {{ csrf() }}
+    {{ error_summary(errors) }}
+    {{ select('category', 'What is it about?', FEEDBACK_CATEGORIES, values, errors) }}
+    {{ input('app_version', 'App version', values, errors, required=False, maxlength=40, hint='For example ' ~ product.version ~ '. Shown in the desktop application.') }}
+    {{ textarea('message', 'Feedback', values, errors, hint='What happened, and what did you expect? Don\'t include passwords or other secrets.') }}
+    <div class="btn-row"><button class="btn" type="submit">Send feedback</button></div>
+  </form>
+</div>
+<div class="panel">
+  <h2>Your feedback</h2>
+  {% if history %}
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">Sent</th><th scope="col">About</th><th scope="col">Status</th><th scope="col">Message</th></tr></thead>
+    <tbody>{% for f in history %}<tr><td>{{ f.created_at|date }}</td><td>{{ f.category|label_for(FEEDBACK_CATEGORIES) }}</td><td><span class="badge">{{ f.status|capitalize }}</span></td><td><div class="msg">{{ f.message }}</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p>Nothing sent yet.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'admin/_shell.html' %}
+{% from 'partials/forms.html' import csrf %}
+{% block admin %}
+<div class="shell__head"><div><h1>Update subscribers</h1><p>Active accounts that opted in to product-update emails. Only email these people about releases.</p></div>
+<form method="post" action="{{ url_for('admin.export', dataset='subscribers') }}">{{ csrf() }}<button class="btn btn--quiet" type="submit">Export to Excel</button></form></div>
+{% if items %}
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Name</th><th scope="col">Opted in</th></tr></thead>
+  <tbody>{% for s in items %}<tr><td>{{ s.username }}</td><td>{{ s.email }}</td><td>{{ (s.first_name ~ ' ' ~ s.last_name).strip() or '—' }}</td><td>{{ s.opted_in_at|datetime }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<div class="table-wrap"><div class="empty"><p>No one has opted in yet.</p></div></div>{% endif %}
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% from 'partials/icons.html' import icon %}
+{% set steps = [
+  ('Configure validation', 'Choose how the run should behave, including capture options and whether to use AI Validation Insights.', 'Set up', 'Before the run'),
+  ('Enter target endpoints', 'List the web endpoints this run should check. Keep the same list to make runs comparable over time.', 'Set up', 'Before the run'),
+  ('Run validation', 'The application checks each endpoint for reachability and technical health from this machine and network.', 'Execute', 'Automatic'),
+  ('Capture visual evidence', 'Screenshots and technical execution details are captured during the run, next to each result.', 'Execute', 'Automatic'),
+  ('Analyze collected evidence', 'Evidence is organised by endpoint. If enabled, AI Validation Insights add an interpretation.', 'Execute', 'Automatic, AI optional'),
+  ('Generate technical report', 'A branded PDF is generated from what the run recorded.', 'Deliver', 'Automatic'),
+  ('Review report', 'Read the report, confirm it shows what you expected, and share it with the people who need it.', 'Deliver', 'You'),
+] %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>From endpoint list to finished report in seven steps</h1>
+  <p class="lede">You set up the run and review the result. {{ product.name }} handles everything in between on your Windows machine.</p>
+</div></header>
+
+<section class="section section--surface" aria-label="Process diagram"><div class="wrap">
+  <figure class="diagram diagram--wide">
+    <svg viewBox="0 0 1000 190" role="img" aria-labelledby="hiw-t hiw-d">
+      <title id="hiw-t">Validation run phases</title>
+      <desc id="hiw-d">Set up: steps 1 and 2. Execute: steps 3 to 5, automatic. Deliver: steps 6 and 7.</desc>
+      {% set phases = [(10, 270, 'Set up', 'You'), (300, 400, 'Execute', 'Automatic, on Windows'), (720, 270, 'Deliver', 'Report, then your review')] %}
+      {% for x, w, name, who in phases %}
+      <rect class="{{ 'd-box d-box--ink' if name == 'Execute' else 'd-zone' }}" x="{{ x }}" y="10" width="{{ w }}" height="170" rx="4"/>
+      <text class="d-t{{ ' d-t--on-ink' if name == 'Execute' else '' }}" x="{{ x + 18 }}" y="38">{{ name }}</text>
+      <text class="d-s{{ ' d-s--on-ink' if name == 'Execute' else '' }}" x="{{ x + 18 }}" y="57">{{ who }}</text>
+      {% endfor %}
+      {% set nodes = [(28,1,'Configure'),(152,2,'Endpoints'),(318,3,'Run'),(448,4,'Capture'),(578,5,'Analyze'),(738,6,'Generate'),(862,7,'Review')] %}
+      {% for x, n, label in nodes %}
+      <rect class="d-box" x="{{ x }}" y="88" width="110" height="64" rx="3"/>
+      <text class="d-n" x="{{ x + 12 }}" y="110">{{ '%02d' % n }}</text>
+      <text class="d-t" x="{{ x + 12 }}" y="136">{{ label }}</text>
+      {% if not loop.last %}
+      {% set nx = nodes[loop.index][0] %}
+      <path class="d-line" d="M{{ x + 112 }} 120 H{{ nx - 8 }}"/>
+      <path class="d-arrow" d="M{{ nx - 2 }} 120 l-8 -4.5 v9z"/>
+      {% endif %}
+      {% endfor %}
+    </svg>
+    <figcaption>Steps 3 to 6 run without input once validation starts.</figcaption>
+  </figure>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <ol class="steps">
+    {% for title, body, phase, who in steps %}
+    <li class="steps__item">
+      <span class="steps__num" aria-hidden="true">{{ loop.index }}</span>
+      <div class="steps__body"><h2><span class="visually-hidden">Step {{ loop.index }}: </span>{{ title }}</h2><p>{{ body }}</p></div>
+      <dl class="steps__where"><dt>Phase</dt><dd>{{ phase }}</dd><dt>Who</dt><dd>{{ who }}</dd></dl>
+    </li>
+    {% endfor %}
+  </ol>
+</div></section>
+
+<section class="section section--surface" aria-labelledby="report-title"><div class="wrap">
+  <div class="section__head"><h2 id="report-title">What step 6 produces</h2><p>The generated report always follows this structure.</p></div>
+  {% include 'partials/report_anatomy.html' %}
+</div></section>
+
+<section class="section section--ink"><div class="wrap cta">
+  <div><h2>Ready for step 1?</h2><p>Install {{ product.name }}, then follow the first-run guide in the documentation.</p></div>
+  <div class="btn-row"><a class="btn btn--large" href="{{ url_for('public.download') }}">{{ icon('download') }}Download {{ product.name }}</a><a class="btn btn--large btn--on-ink" href="{{ url_for('public.documentation') }}#first-run">First-run guide</a></div>
+</div></section>
+{% endblock %}

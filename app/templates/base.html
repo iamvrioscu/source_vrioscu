@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set full_title = (page_title ~ ' | ' ~ product.name) if page_title else (product.name ~ ': ' ~ product.positioning) %}
+  {% set desc = meta_description or (product.name ~ ' is a Windows application for endpoint validation and evidence capture.') %}
+  <title>{{ full_title }}</title>
+  <meta name="description" content="{{ desc }}">
+  <link rel="canonical" href="{{ base_url }}{{ request.path }}">
+  {% if noindex %}<meta name="robots" content="noindex, nofollow">{% endif %}
+  <meta name="theme-color" content="#16202a">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ product.name }}">
+  <meta property="og:title" content="{{ full_title }}">
+  <meta property="og:description" content="{{ desc }}">
+  <meta property="og:url" content="{{ base_url }}{{ request.path }}">
+  <meta property="og:image" content="{{ base_url }}{{ url_for('static', filename='img/og.png') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ full_title }}">
+  <meta name="twitter:description" content="{{ desc }}">
+  <meta name="twitter:image" content="{{ base_url }}{{ url_for('static', filename='img/og.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/Archivo-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+  <script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% set ep = request.endpoint or '' %}
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="{{ url_for('public.home') }}" aria-label="{{ product.name }} home">
+        {% include 'partials/mark.html' %}<span class="wordmark">{{ product.name }}</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul class="site-nav__links">
+          {% for endpoint, label in [('public.product','Product'),('public.features','Features'),('public.how_it_works','How it works'),('public.use_cases','Use cases'),('public.documentation','Documentation'),('public.public_beta','Public Beta')] %}
+          <li><a href="{{ url_for(endpoint) }}"{% if ep == endpoint %} aria-current="page"{% endif %}>{{ label }}</a></li>
+          {% endfor %}
+        </ul>
+        <div class="site-nav__actions">
+          {% if current_user %}
+            {% if current_user.role == 'admin' %}<a class="plain" href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
+            <a class="plain" href="{{ url_for('account.profile') }}">Account</a>
+            <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link-button" type="submit">Sign out</button></form>
+          {% else %}
+            <a class="plain" href="{{ url_for('auth.login') }}">Sign in</a>
+          {% endif %}
+          <a class="btn btn--small" href="{{ url_for('public.download') }}">Download</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__grid">
+      <div>
+        <a class="brand" href="{{ url_for('public.home') }}">{% include 'partials/mark.html' %}<span class="wordmark">{{ product.name }}</span></a>
+        <p class="site-footer__tag">{{ product.positioning }}. {{ product.tagline }}</p>
+      </div>
+      <div>
+        <h2>Product</h2>
+        <ul>
+          <li><a href="{{ url_for('public.product') }}">Overview</a></li>
+          <li><a href="{{ url_for('public.features') }}">Features</a></li>
+          <li><a href="{{ url_for('public.how_it_works') }}">How it works</a></li>
+          <li><a href="{{ url_for('public.use_cases') }}">Use cases</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Get started</h2>
+        <ul>
+          <li><a href="{{ url_for('public.download') }}">Download</a></li>
+          <li><a href="{{ url_for('public.public_beta') }}">Public Beta</a></li>
+          <li><a href="{{ url_for('public.documentation') }}">Documentation</a></li>
+          <li><a href="{{ url_for('auth.register') }}">Create account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Help</h2>
+        <ul>
+          <li><a href="{{ url_for('public.contact') }}">Contact and support</a></li>
+          <li><a href="{{ url_for('account.feedback') }}">Send feedback</a></li>
+          <li><a href="{{ url_for('public.privacy') }}">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="wrap site-footer__base">
+      <span>&copy; {{ 2026 }} {{ product.name }}</span>
+      <span>{{ product.name }} {{ product.version }}{% if product.public_beta %}, {{ product.channel_label }}{% endif %}</span>
+    </div>
+  </footer>
+  <div id="live-region" class="visually-hidden" aria-live="polite"></div>
+</body>
+</html>

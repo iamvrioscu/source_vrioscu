@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% from 'partials/icons.html' import icon %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>Proof that your endpoints work, in a report people can read</h1>
+  <p class="lede">{{ product.name }} is a Windows desktop application for endpoint validation and evidence capture. It runs a repeatable check against the web endpoints you choose, records what it saw, and turns the result into a technical PDF.</p>
+  <div class="btn-row"><a class="btn" href="{{ url_for('public.download') }}">{{ icon('download') }}Download {{ product.name }}</a><a class="btn btn--quiet" href="{{ url_for('public.how_it_works') }}">How it works</a></div>
+</div></header>
+
+<section class="section"><div class="wrap split">
+  <div class="prose">
+    <h2>Who it's for</h2>
+    <p>Technical teams that have to show, not just say, that endpoints are reachable and healthy from a particular machine and network: network and infrastructure engineers, IT support, QA and teams signing off site integrations or changes.</p>
+    <h2>What problem it solves</h2>
+    <p>Manual validation usually means opening each address by hand, taking screenshots, noting results in a spreadsheet and assembling a document afterwards. It's slow, hard to repeat, and the evidence drifts away from the results it's meant to support.</p>
+    <p>{{ product.name }} does those steps as one run. The same endpoints are checked the same way, evidence is captured during the run, and the report is generated from what was recorded.</p>
+    <h2>Why it's a desktop application</h2>
+    <p>Useful validation evidence includes details about the machine and network the test ran from, such as hostname, local IP address, gateway, DNS servers, Wi-Fi SSID, signal strength, frequency and channel, and network adapter information.</p>
+    <p>Web browsers intentionally block websites from reading this information. That protects everyone's privacy, and it's why {{ product.name }} runs on Windows instead of in a browser tab. This website never attempts to collect it.</p>
+  </div>
+  <aside class="split__aside aside-box" aria-label="At a glance">
+    <h2>At a glance</h2>
+    <dl class="facts">
+      <div><dt>Platform</dt><dd>{{ product.windows_compatibility }}</dd></div>
+      <div><dt>Current version</dt><dd>{{ product.version }}{% if product.public_beta %} <span class="badge badge--beta">{{ product.channel_label }}</span>{% endif %}</dd></div>
+      <div><dt>Output</dt><dd>Technical PDF report</dd></div>
+      <div><dt>AI Validation Insights</dt><dd>Optional</dd></div>
+    </dl>
+  </aside>
+</div></section>
+
+<section class="section section--surface" aria-labelledby="arch-title"><div class="wrap">
+  <div class="section__head">
+    <h2 id="arch-title">Where each part runs</h2>
+    <p>Validation happens on your Windows machine. The website handles accounts, downloads, documentation and support. It doesn't receive your validation runs, screenshots or reports.</p>
+  </div>
+  <figure class="diagram diagram--wide">
+    <svg viewBox="0 0 960 330" role="img" aria-labelledby="arch-svg-title arch-svg-desc">
+      <title id="arch-svg-title">VRIOSCU architecture boundary</title>
+      <desc id="arch-svg-desc">The Windows application validates endpoints, captures evidence and generates the report locally. The website provides download, release information, accounts, documentation and support.</desc>
+      <rect class="d-zone" x="10" y="10" width="560" height="310" rx="4"/>
+      <text class="d-label" x="30" y="38">Your Windows machine</text>
+      <rect class="d-box d-box--ink" x="30" y="56" width="520" height="56" rx="3"/>
+      <text class="d-t d-t--on-ink" x="50" y="82">{{ product.name }} desktop application</text>
+      <text class="d-s d-s--on-ink" x="50" y="100">Runs validation against the endpoints you choose</text>
+      {% for x, t, s in [(30,'Validate','Endpoint health'),(160,'Capture','Screenshots'),(290,'Analyze','Evidence'),(420,'Document','PDF report')] %}
+      <rect class="d-box" x="{{ x }}" y="134" width="120" height="64" rx="3"/>
+      <text class="d-t" x="{{ x + 14 }}" y="161">{{ t }}</text>
+      <text class="d-s" x="{{ x + 14 }}" y="181">{{ s }}</text>
+      {% endfor %}
+      <rect class="d-box d-box--tint" x="30" y="220" width="250" height="80" rx="3"/>
+      <text class="d-t" x="46" y="246">Local machine and network</text>
+      <text class="d-s" x="46" y="266">Hostname, local IP, gateway, DNS,</text>
+      <text class="d-s" x="46" y="284">SSID, signal, channel, adapter</text>
+      <rect class="d-box d-box--tint" x="300" y="220" width="250" height="80" rx="3"/>
+      <text class="d-t" x="316" y="246">Target web endpoints</text>
+      <text class="d-s" x="316" y="266">Checked from this machine,</text>
+      <text class="d-s" x="316" y="284">over this network</text>
+
+      <rect class="d-zone" x="640" y="10" width="310" height="310" rx="4"/>
+      <text class="d-label" x="660" y="38">vrioscu.com</text>
+      {% for y, t in [(56,'Downloads and releases'),(110,'Account and profile'),(164,'Documentation'),(218,'Support and feedback')] %}
+      <rect class="d-box" x="660" y="{{ y }}" width="270" height="42" rx="3"/>
+      <text class="d-t" x="676" y="{{ y + 26 }}">{{ t }}</text>
+      {% endfor %}
+      <text class="d-s" x="660" y="296">No validation data is sent here</text>
+
+      <path class="d-line" d="M655 77 H582"/>
+      <path class="d-arrow" d="M576 77 l10 -5 v10z"/>
+      <text class="d-n" x="582" y="66">installer</text>
+    </svg>
+    <figcaption>The only thing that travels from the website to your machine is the installer and its release information.</figcaption>
+  </figure>
+</div></section>
+
+<section class="section" aria-labelledby="report-title"><div class="wrap">
+  <div class="section__head">
+    <h2 id="report-title">What's in a report</h2>
+    <p>Every report follows the same structure, so reviewers know where to find things.</p>
+  </div>
+  {% include 'partials/report_anatomy.html' %}
+</div></section>
+{% endblock %}

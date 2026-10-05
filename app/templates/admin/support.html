@@ -1,0 +1,5 @@
+{% extends 'admin/_shell.html' %}
+{% block admin %}
+<div class="shell__head"><div><h1>Support requests</h1><p>From the contact form. Reply by email. Newest first.</p></div></div>
+{% with kind='support', headers=['Sent','From','Topic'] %}{% include 'admin/_inbox.html' %}{% endwith %}
+{% endblock %}

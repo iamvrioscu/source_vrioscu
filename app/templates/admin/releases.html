@@ -1,0 +1,27 @@
+{% extends 'admin/_shell.html' %}
+{% from 'partials/forms.html' import csrf %}
+{% block admin %}
+<div class="shell__head"><div><h1>Releases</h1><p>Published Public Beta and Stable releases appear on the download page and in the public release API.</p></div>
+<a class="btn" href="{{ url_for('admin.release_new') }}">Add release</a></div>
+{% if items %}
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col">Version</th><th scope="col">Channel</th><th scope="col">Date</th><th scope="col">State</th><th scope="col">Signed</th><th scope="col" class="num">Downloads</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for r in items %}
+    <tr>
+      <td><strong>{{ r.version }}</strong>{% if r.is_mandatory %} <span class="badge badge--warn">Required</span>{% endif %}<br><code class="hint">{{ r.installer_filename }}</code></td>
+      <td>{{ r.channel }}</td>
+      <td>{{ r.release_date }}</td>
+      <td>{% if r.is_published %}<span class="badge badge--pass">Published</span>{% else %}<span class="badge badge--muted">Draft</span>{% endif %}</td>
+      <td>{{ 'Yes' if r.is_signed else 'No' }}</td>
+      <td class="num">{{ totals.get(r.id, 0) }}</td>
+      <td><span class="btn-row"><a class="btn btn--quiet btn--small" href="{{ url_for('admin.release_edit', release_id=r.id) }}">Edit<span class="visually-hidden"> {{ r.version }}</span></a>
+        <form class="inline-form" method="post" action="{{ url_for('admin.release_delete', release_id=r.id) }}" data-confirm="Delete release {{ r.version }} ({{ r.channel }})? Its download counts are deleted too.">{{ csrf() }}<button class="btn btn--quiet btn--small" type="submit">Delete<span class="visually-hidden"> {{ r.version }}</span></button></form></span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}
+<div class="table-wrap"><div class="empty"><p>No releases yet.</p><p>Add one when the installer is hosted at an HTTPS address and you have its SHA-256.</p></div></div>
+{% endif %}
+{% endblock %}

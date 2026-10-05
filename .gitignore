@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+instance/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+backups/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+.coverage
+htmlcov/
+!instance/.gitkeep

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% from 'partials/icons.html' import icon %}
+{% block content %}
+<header class="page-head"><div class="wrap">
+  <h1>Validate, capture, analyze, document</h1>
+  <p class="lede">Four capabilities that make up every {{ product.name }} run. Nothing here depends on the website: it all happens in the Windows application.</p>
+</div></header>
+
+<section class="section"><div class="wrap">
+  <div class="capabilities">
+    <article class="capability" id="validate">
+      <h2 class="capability__name">Validate</h2>
+      <p class="capability__lead">Endpoint reachability and technical health.</p>
+      <div class="capability__detail"><ul>
+        <li>Enter the endpoints you need to check and run them as one validation.</li>
+        <li>Runs are repeatable, so you can compare before and after a change.</li>
+        <li>Results come from the machine and network you are actually testing.</li>
+      </ul></div>
+    </article>
+    <article class="capability" id="capture">
+      <h2 class="capability__name">Capture</h2>
+      <p class="capability__lead">High-quality visual evidence with configurable capture options.</p>
+      <div class="capability__detail"><ul>
+        <li>Screenshots are taken as part of the run, not afterwards.</li>
+        <li>Capture options are configured before you run validation.</li>
+        <li>Technical execution and network details are recorded alongside the images.</li>
+      </ul></div>
+    </article>
+    <article class="capability" id="analyze">
+      <h2 class="capability__name">Analyze</h2>
+      <p class="capability__lead">Structured technical evidence and optional AI Validation Insights.</p>
+      <div class="capability__detail"><ul>
+        <li>Evidence is organised by endpoint, so results are easy to review.</li>
+        <li>AI Validation Insights can add a written interpretation of the evidence.</li>
+        <li>AI Validation Insights are optional. Validation and reports work without them.</li>
+      </ul></div>
+    </article>
+    <article class="capability" id="document">
+      <h2 class="capability__name">Document</h2>
+      <p class="capability__lead">Professional technical reports.</p>
+      <div class="capability__detail"><ul>
+        <li>A branded PDF generated from the run's recorded results.</li>
+        <li>Consistent structure from cover to evidence.</li>
+        <li>Ready to attach to a change record, sign-off or escalation.</li>
+      </ul></div>
+    </article>
+  </div>
+</div></section>
+
+<section class="section section--surface" aria-labelledby="net-title"><div class="wrap split">
+  <div class="prose">
+    <h2 id="net-title">Network environment evidence</h2>
+    <p>When a result depends on where a test ran from, the report needs to say where that was. The desktop application can record details such as:</p>
+    <ul>
+      <li>Hostname and local IP address</li>
+      <li>Default gateway and DNS servers</li>
+      <li>Wi-Fi SSID, signal strength, frequency and channel</li>
+      <li>Network adapter and radio information</li>
+    </ul>
+    <p>These come from Windows on the machine running the validation. Browsers don't expose them to websites, and this website doesn't try to collect them.</p>
+  </div>
+  <aside class="split__aside aside-box">
+    <h2>See the report structure</h2>
+    <p>Every section of a {{ product.name }} report, from cover to optional AI Validation Insights.</p>
+    <p><a href="{{ url_for('public.product') }}#report-title">What's in a report</a></p>
+  </aside>
+</div></section>
+
+<section class="section section--ink"><div class="wrap cta">
+  <div><h2>Try it on your own endpoints</h2><p>{{ product.name }} {{ product.version }} is available as a {{ product.channel_label }}.</p></div>
+  <div class="btn-row"><a class="btn btn--large" href="{{ url_for('public.download') }}">{{ icon('download') }}Download {{ product.name }}</a></div>
+</div></section>
+{% endblock %}

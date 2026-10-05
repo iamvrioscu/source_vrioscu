@@ -1,0 +1,37 @@
+{# Signature visual: the real report structure, shown as an empty template. No invented values. #}
+<figure class="report-stack-figure">
+  <div class="report-stack" aria-hidden="true">
+    <div class="sheet sheet--evidence">
+      <div class="sheet__label">Visual evidence</div>
+      <div class="sheet__frame"><i></i></div>
+      <div class="sheet__caption"><div class="sheet__bar"></div><div class="sheet__bar sheet__bar--short"></div></div>
+    </div>
+    <div class="sheet sheet--summary">
+      <div class="sheet__label">Validation summary</div>
+      <div class="sheet__table">
+        <span class="th">Endpoint</span><span class="th">Result</span><span class="th">Metrics</span><span class="th">Evidence</span>
+        {% for _ in range(6) %}<span class="sheet__bar"></span><span class="sheet__state"></span><span class="sheet__bar"></span><span class="sheet__bar"></span>{% endfor %}
+      </div>
+      <div class="sheet__rule"></div>
+      <div class="sheet__label">Network environment</div>
+      <div class="sheet__table">
+        {% for _ in range(3) %}<span class="sheet__bar"></span><span class="sheet__bar"></span><span></span><span></span>{% endfor %}
+      </div>
+    </div>
+    <div class="sheet sheet--cover">
+      <div class="cover__band">{% with cls='' %}{% include 'partials/mark.html' %}{% endwith %}<span class="wordmark">{{ product.name }}</span></div>
+      <div class="cover__body">
+        <div class="cover__title">Endpoint Validation Report</div>
+        <div class="cover__sub">Validation summary, technical metrics and visual evidence</div>
+        <div class="cover__fields">
+          <div class="cover__field"><span>Test name</span><span></span></div>
+          <div class="cover__field"><span>Environment</span><span></span></div>
+          <div class="cover__field"><span>Endpoints</span><span></span></div>
+          <div class="cover__field"><span>Generated</span><span></span></div>
+        </div>
+        <div class="cover__foot"><span>{{ product.tagline }}</span></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="report-stack__note">Report layout shown as a blank template. Your reports contain only data from your own runs.</figcaption>
+</figure>

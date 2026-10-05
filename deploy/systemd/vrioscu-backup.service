@@ -1,0 +1,17 @@
+[Unit]
+Description=VRIOSCU website database backup and maintenance
+
+[Service]
+Type=oneshot
+User=vrioscu
+Group=vrioscu
+WorkingDirectory=/opt/vrioscu/app
+EnvironmentFile=/etc/vrioscu/vrioscu.env
+UMask=0077
+ExecStart=/opt/vrioscu/venv/bin/python scripts/backup_db.py --db /var/lib/vrioscu/vrioscu.db --dest /var/backups/vrioscu --keep-days 14
+ExecStartPost=/opt/vrioscu/venv/bin/python scripts/maintenance.py
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/vrioscu /var/backups/vrioscu
