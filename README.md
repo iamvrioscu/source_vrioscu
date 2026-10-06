@@ -88,3 +88,4 @@ tests/                 unittest suite
 - Don't describe the installer as signed, verified or certified unless `INSTALLER_SIGNED=true` is actually true.
 - Never tell users to disable SmartScreen, Smart App Control, Defender or other security controls.
 - Product values (version, channel, URLs, contacts) come from `app/config.py`; don't hard-code them in templates.
+  GDrive - https://drive.google.com/file/d/1W4OnwxxpP4mH4lbXCNDW1zqidCXOHQD5/view?usp=drive_link
