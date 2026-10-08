@@ -1,1 +1,146 @@
+{% extends "base.html" %}
+{% from "partials/forms.html" import csrf, input, select, checkbox, error_summary %}
 
+{% block content %}
+<div class="auth">
+  <div class="auth__main">
+    <div>
+      <h1>Create an account</h1>
+      <p class="lede">
+        Takes a minute. Only username, email and password are required.
+      </p>
+
+      <form
+        class="form"
+        method="post"
+        action="{{ url_for('auth.register') }}"
+        novalidate
+      >
+        {{ csrf() }}
+        {{ error_summary(errors) }}
+
+        {{ input(
+          'username',
+          'Username',
+          values,
+          errors,
+          autocomplete='username',
+          maxlength=32,
+          hint='3 to 32 letters, numbers, dots, dashes or underscores.'
+        ) }}
+
+        {{ input(
+          'email',
+          'Email address',
+          values,
+          errors,
+          type='email',
+          autocomplete='email',
+          maxlength=254
+        ) }}
+
+        {{ input(
+          'password',
+          'Password',
+          values,
+          errors,
+          type='password',
+          autocomplete='new-password',
+          maxlength=128,
+          hint='At least 12 characters. A short phrase is easier to remember than random symbols.'
+        ) }}
+
+        <div class="form-row">
+          {{ input(
+            'first_name',
+            'First name',
+            values,
+            errors,
+            required=False,
+            autocomplete='given-name',
+            maxlength=80
+          ) }}
+
+          {{ input(
+            'last_name',
+            'Last name',
+            values,
+            errors,
+            required=False,
+            autocomplete='family-name',
+            maxlength=80
+          ) }}
+        </div>
+
+        {{ select(
+          'country',
+          'Country',
+          COUNTRIES,
+          values,
+          errors,
+          required=False,
+          placeholder='Select a country'
+        ) }}
+
+        {{ select(
+          'purpose',
+          'Main use',
+          PURPOSES,
+          values,
+          errors,
+          required=False,
+          hint='Helps us understand how {{ product.name }} is used.'
+        ) }}
+
+        {{ checkbox(
+          'product_updates',
+          'Email me about new ' ~ product.name ~ ' releases',
+          values,
+          errors,
+          hint='Optional. Change this any time in your account.'
+        ) }}
+
+        {{ checkbox(
+          'accept_privacy',
+          "I've read the privacy notice",
+          values,
+          errors,
+          hint='Required to create an account.'
+        ) }}
+
+        <p class="hint">
+          <a href="{{ url_for('public.privacy') }}">Read the privacy notice</a>
+        </p>
+
+        <div class="btn-row">
+          <button class="btn btn--primary" type="submit">
+            Create account
+          </button>
+        </div>
+      </form>
+
+      <p class="auth__alt">
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}">Sign in</a>.
+      </p>
+    </div>
+  </div>
+
+  <div class="auth__side">
+    <div>
+      <h2>What an account gives you</h2>
+
+      <p>
+        Send Public Beta feedback straight to the team, opt in to release
+        emails, and manage the data this website holds about you.
+      </p>
+
+      <ul>
+        <li>Passwords are stored as salted one-way hashes.</li>
+        <li>Release emails are off unless you turn them on.</li>
+        <li>Delete your account any time.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
