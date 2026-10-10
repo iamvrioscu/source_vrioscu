@@ -89,7 +89,7 @@ tests/                 unittest suite
 - Never tell users to disable SmartScreen, Smart App Control, Defender or other security controls.
 - Product values (version, channel, URLs, contacts) come from `app/config.py`; don't hard-code them in templates.
   GDrive - https://drive.google.com/file/d/1zW04Qogu_roVOeBISabjBJknXTVS-nBB/view?usp=sharing
-  GDrive (Final_9thOct) - https://drive.google.com/file/d/1Nn9Z1Sur_9uJU_6Ac-5MiMQNgNfB7Ufg/view?usp=sharing
+  GDrive (Final_10thOct) - https://drive.google.com/file/d/1CYfUmyxPg5FlfmgQrO0FRcuXhxFcoPUp/view?usp=sharing
   
 ----------APPLICATION-------------------------
 # VRIOSCU — Intelligent Validation & Reporting
