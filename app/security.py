@@ -52,22 +52,53 @@ def csrf_token() -> str:
     return digest(_csrf_binding(), "csrf")
 
 
+
 def verify_csrf() -> None:
     if request.method not in UNSAFE_METHODS:
         return
+
     # Defence in depth: browsers send Origin on cross-site unsafe requests.
     origin = request.headers.get("Origin")
     if origin and origin != "null":
         expected = urlparse(settings().base_url)
         got = urlparse(origin)
-        if (got.scheme, got.netloc) != (expected.scheme, expected.netloc) and \
-                (got.netloc != request.host):
+        if (
+            (got.scheme, got.netloc) != (expected.scheme, expected.netloc)
+            and got.netloc != request.host
+        ):
             log_event(log, logging.WARNING, "csrf.origin_mismatch", path=request.path)
             abort(403, description="Cross-site request blocked.")
+
+    # Desktop registration is a public JSON API, not a browser form.
+    # Keep the origin check above and exempt only this exact endpoint.
+    if request.method == "POST" and request.path == "/api/v1/users/register":
+        if request.is_json:
+            return
+
+    # Desktop JSON updates authenticate through the bearer credential decorator.
+    # Keep the Origin check above; only skip browser CSRF tokens for these exact routes.
+    desktop_update_paths = {
+        "/api/v1/users/username",
+        "/api/v1/users/preferences",
+    }
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, raw_token = authorization.partition(" ")
+
+    if (
+        request.method == "PUT"
+        and request.path in desktop_update_paths
+        and request.is_json
+        and scheme.lower() == "bearer"
+        and bool(raw_token.strip())
+        and len(raw_token.strip()) <= 256
+    ):
+        return
+
     sent = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token", "")
     if not sent or not hmac.compare_digest(sent, csrf_token()):
         log_event(log, logging.WARNING, "csrf.invalid", path=request.path)
         abort(400, description="Your form expired. Reload the page and try again.")
+
 
 
 # ---------------------------------------------------------------- Rate limiting
@@ -124,6 +155,38 @@ def login_required(fn):
         return fn(*a, **kw)
     return wrapper
 
+
+
+def desktop_credential_required(fn):
+    """Authenticate a desktop API request using a high-entropy bearer token."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        header = request.headers.get("Authorization", "")
+        scheme, _, raw = header.partition(" ")
+        if scheme.lower() != "bearer" or not raw or len(raw) > 256:
+            return jsonify(error={
+                "code": "unauthenticated",
+                "message": "A valid desktop credential is required.",
+                "request_id": g.get("request_id"),
+            }), 401
+
+        from .services.auth import token_hash
+
+        credential = g.repos.desktop_credentials.get_active(token_hash(raw.strip()))
+        if not credential:
+            return jsonify(error={
+                "code": "unauthenticated",
+                "message": "A valid desktop credential is required.",
+                "request_id": g.get("request_id"),
+            }), 401
+
+        with transaction(g.db):
+            g.repos.desktop_credentials.touch(credential["id"])
+
+        g.desktop_user = credential
+        return fn(*args, **kwargs)
+
+    return wrapper
 
 def admin_required(fn):
     @wraps(fn)

@@ -4,17 +4,19 @@ Authentication: the session cookie. Unsafe methods require the
 X-CSRF-Token header (value from GET /api/v1/me or the page's meta tag).
 """
 import logging
+import secrets
 
 from flask import Blueprint, abort, current_app, g, jsonify, request, url_for
 
 from ..db import transaction
-from ..forms import FEEDBACK, PROFILE_UPDATE, SUPPORT
+from ..forms import FEEDBACK, PROFILE_UPDATE, REGISTER, SUPPORT
 from ..logging_setup import log_event
 from ..repositories.feedback import STATUSES as FEEDBACK_STATUSES
 from ..repositories.releases import CHANNELS, PUBLIC_CHANNELS
 from ..repositories.support import STATUSES as SUPPORT_STATUSES
-from ..security import admin_required, check_rate, csrf_token, login_required
-from ..services.auth import public_user
+from ..security import admin_required, check_rate, csrf_token, desktop_credential_required, login_required
+from ..services import auth as auth_service
+from ..services.auth import hash_password, public_user, token_hash
 from ..services.releases import current_download, public_release
 from ..validation import ValidationError, semver_tuple, validate
 from .admin import export_response, save_release
@@ -46,6 +48,167 @@ def _cors(resp):
         resp.headers["Access-Control-Allow-Origin"] = origin
         resp.headers["Vary"] = "Origin"
     return resp
+
+
+
+# ---------------------------------------------------------------- desktop registration
+@bp.put("/users/username")
+@desktop_credential_required
+def desktop_update_username():
+    data = _json_body()
+    if not isinstance(data.get("username"), str):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "A username is required.",
+            "fields": {"username": "Enter a valid username."},
+            "request_id": g.get("request_id"),
+        }), 422
+
+    username_field = next(
+        (field for field in REGISTER if field.name == "username"), None
+    )
+    if username_field is None:
+        raise RuntimeError("Username validation field is not configured.")
+
+    try:
+        clean = validate({"username": data["username"]}, [username_field])
+    except ValidationError as exc:
+        return _invalid(exc)
+
+    username = clean["username"]
+    user_id = g.desktop_user["user_id"]
+
+    if g.repos.users.exists(username=username, exclude_id=user_id):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "That username is already taken.",
+            "fields": {"username": "Choose another username."},
+            "request_id": g.get("request_id"),
+        }), 422
+
+    try:
+        with transaction(g.db):
+            g.repos.users.update_username(user_id, username)
+    except Exception as exc:
+        # SQLite uniqueness is the final protection against concurrent requests.
+        import sqlite3
+        if isinstance(exc, sqlite3.IntegrityError):
+            return jsonify(error={
+                "code": "validation_failed",
+                "message": "That username is already taken.",
+                "fields": {"username": "Choose another username."},
+                "request_id": g.get("request_id"),
+            }), 422
+        raise
+
+    return jsonify(ok=True, username=username), 200
+
+
+@bp.put("/users/preferences")
+@desktop_credential_required
+def desktop_update_preferences():
+    data = _json_body()
+
+    if not isinstance(data.get("product_updates"), bool):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "product_updates must be true or false.",
+            "fields": {
+                "product_updates": "Provide a boolean value."
+            },
+            "request_id": g.get("request_id"),
+        }), 422
+
+    enabled = data["product_updates"]
+    user_id = g.desktop_user["user_id"]
+    settings = current_app.config["SETTINGS"]
+
+    with transaction(g.db):
+        g.repos.preferences.set_updates(
+            user_id,
+            enabled,
+            settings.product.privacy_notice_version,
+        )
+
+    return jsonify(ok=True, product_updates=enabled), 200
+
+
+@bp.post("/users/register")
+def desktop_register():
+    check_rate("desktop_register", 5, 3600)
+    data = _json_body()
+
+    if data.get("accept_privacy") is not True:
+        return jsonify(
+            error={
+                "code": "validation_failed",
+                "message": "Privacy consent is required.",
+                "fields": {"accept_privacy": "Privacy consent is required."},
+                "request_id": g.get("request_id"),
+            }
+        ), 422
+
+    fields = [f for f in REGISTER if f.name != "password"]
+    try:
+        clean = validate(data, fields)
+    except ValidationError as exc:
+        return _invalid(exc)
+
+    required = ("username", "email", "first_name", "last_name", "country", "purpose")
+    missing = [name for name in required if not clean.get(name)]
+    if missing:
+        return jsonify(
+            error={
+                "code": "validation_failed",
+                "message": "Required registration fields are missing.",
+                "fields": {name: "This field is required." for name in missing},
+                "request_id": g.get("request_id"),
+            }
+        ), 422
+
+    clean["accept_privacy"] = True
+    clean["password"] = secrets.token_urlsafe(48)
+    raw_credential = secrets.token_urlsafe(32)
+    settings = current_app.config["SETTINGS"]
+
+    try:
+        with transaction(g.db):
+            if g.repos.users.exists(username=clean["username"]):
+                raise ValidationError({"username": "That username is taken. Choose another."})
+            if g.repos.users.exists(email=clean["email"]):
+                raise ValidationError({"email": "An account with this email already exists."})
+
+            user_id = g.repos.users.create(
+                username=clean["username"],
+                email=clean["email"],
+                password_hash=hash_password(clean["password"]),
+                first_name=clean["first_name"],
+                last_name=clean["last_name"],
+                country=clean["country"],
+                purpose=clean["purpose"],
+            )
+
+            version = settings.product.privacy_notice_version
+            g.repos.preferences.record_consent(
+                user_id, "privacy_notice", True, version
+            )
+            g.repos.preferences.set_updates(
+                user_id, bool(clean.get("product_updates")), version
+            )
+            g.repos.desktop_credentials.create(
+                user_id=user_id,
+                token_hash=token_hash(raw_credential),
+            )
+    except ValidationError as exc:
+        return _invalid(exc)
+
+    log_event(log, logging.INFO, "desktop.registration_succeeded", user_id=user_id)
+    return jsonify(
+        ok=True,
+        message="Registration successful.",
+        user_id=user_id,
+        desktop_credential=raw_credential,
+    ), 201
 
 
 # ---------------------------------------------------------------- public
