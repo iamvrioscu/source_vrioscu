@@ -7,6 +7,7 @@ Replacing SQLite with PostgreSQL means re-implementing these classes
 from .users import UserRepository
 from .sessions import SessionRepository
 from .desktop_credentials import DesktopCredentialRepository
+from .desktop_submissions import DesktopSubmissionRepository
 from .preferences import PreferenceRepository
 from .feedback import FeedbackRepository
 from .support import SupportRepository
@@ -21,6 +22,7 @@ class Repositories:
         self.users = UserRepository(conn)
         self.sessions = SessionRepository(conn)
         self.desktop_credentials = DesktopCredentialRepository(conn)
+        self.desktop_submissions = DesktopSubmissionRepository(conn)
         self.preferences = PreferenceRepository(conn)
         self.feedback = FeedbackRepository(conn)
         self.support = SupportRepository(conn)

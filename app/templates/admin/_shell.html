@@ -12,6 +12,7 @@
       <li class="group">Inbox</li>
       <li><a href="{{ url_for('admin.feedback') }}"{% if ep == 'admin.feedback' %} aria-current="page"{% endif %}>Feedback</a></li>
       <li><a href="{{ url_for('admin.support') }}"{% if ep == 'admin.support' %} aria-current="page"{% endif %}>Support requests</a></li>
+      <li><a href="{{ url_for('admin.desktop_submissions') }}"{% if ep in ('admin.desktop_submissions', 'admin.desktop_submission_status') %} aria-current="page"{% endif %}>Desktop submissions</a></li>
       <li class="group">Distribution</li>
       <li><a href="{{ url_for('admin.releases') }}"{% if ep in ('admin.releases','admin.release_new','admin.release_edit') %} aria-current="page"{% endif %}>Releases</a></li>
       <li><a href="{{ url_for('admin.exports') }}"{% if ep == 'admin.exports' %} aria-current="page"{% endif %}>Exports</a></li>

@@ -1,0 +1,65 @@
+{% extends 'admin/_shell.html' %}
+{% from 'partials/forms.html' import csrf %}
+{% block admin %}
+<div class="shell__head">
+  <div>
+    <h1>Desktop submissions</h1>
+    <p>Feedback, bug reports, problem reports, and feature requests submitted by authenticated desktop users.</p>
+  </div>
+</div>
+<nav class="filters" aria-label="Filter by status">
+  <a href="{{ url_for('admin.desktop_submissions') }}"{% if not status %} aria-current="true"{% endif %}>All</a>
+  {% for s in statuses %}
+    <a href="{{ url_for('admin.desktop_submissions', status=s) }}"{% if status == s %} aria-current="true"{% endif %}>{{ s|capitalize }}</a>
+  {% endfor %}
+</nav>
+{% if items %}
+<div class="table-wrap"><table>
+  <thead><tr>
+    <th scope="col">Received</th><th scope="col">User</th><th scope="col">Type</th>
+    <th scope="col">Version</th><th scope="col">Details</th><th scope="col">Environment</th><th scope="col">Status</th>
+  </tr></thead>
+  <tbody>
+  {% for item in items %}
+    <tr>
+      <td>{{ item.created_at|date }}</td>
+      <td>{{ item.username }}<br><a class="hint" href="mailto:{{ item.email }}">{{ item.email }}</a></td>
+      <td>{{ item.submission_type|replace('_', ' ')|title }}</td>
+      <td>{{ item.app_version or '—' }}</td>
+      <td>
+        <dl>
+        {% for key, value in item.details.items() %}
+          <dt>{{ key|replace('_', ' ')|capitalize }}</dt>
+          <dd class="msg">{{ value|join(', ') if value is sequence and value is not string else value }}</dd>
+        {% endfor %}
+        </dl>
+        <details><summary>Submission metadata</summary>
+          <dl>
+          {% for key, value in item.metadata.items() %}
+            <dt>{{ key|replace('_', ' ')|capitalize }}</dt><dd>{{ value }}</dd>
+          {% endfor %}
+          </dl>
+          <p>Client ID: <code>{{ item.client_submission_id }}</code></p>
+          {% if item.client_created_at %}<p>Client timestamp: {{ item.client_created_at }}</p>{% endif %}
+        </details>
+      </td>
+      <td>{{ item.metadata.get('os_name', '—') }} {{ item.metadata.get('os_release', '') }}<br>{{ item.metadata.get('architecture', '') }}</td>
+      <td>
+        <form class="inline-form" method="post" action="{{ url_for('admin.desktop_submission_status', item_id=item.id) }}">
+          {{ csrf() }}
+          <input type="hidden" name="filter" value="{{ status or '' }}">
+          <label class="visually-hidden" for="desktop-st-{{ item.id }}">Status for submission {{ item.id }}</label>
+          <select class="input" id="desktop-st-{{ item.id }}" name="status">
+          {% for s in statuses %}<option value="{{ s }}"{% if s == item.status %} selected{% endif %}>{{ s|capitalize }}</option>{% endfor %}
+          </select>
+          <button class="btn btn--quiet btn--small" type="submit">Update</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}
+<div class="table-wrap"><div class="empty"><p>No desktop submissions {{ ('marked "' ~ status ~ '"') if status else 'yet' }}.</p></div></div>
+{% endif %}
+{% endblock %}
