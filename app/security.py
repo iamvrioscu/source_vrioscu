@@ -81,6 +81,9 @@ def verify_csrf() -> None:
         "/api/v1/users/username",
         "/api/v1/users/preferences",
     }
+    desktop_post_paths = {
+        "/api/v1/desktop-submissions",
+    }
     authorization = request.headers.get("Authorization", "")
     scheme, _, raw_token = authorization.partition(" ")
 
@@ -91,6 +94,15 @@ def verify_csrf() -> None:
         and scheme.lower() == "bearer"
         and bool(raw_token.strip())
         and len(raw_token.strip()) <= 256
+    ):
+        return
+
+    # This JSON API authenticates in its route decorator, not via browser CSRF.
+    # Preserve the Origin check above; the endpoint still requires a valid bearer token.
+    if (
+        request.method == "POST"
+        and request.path in desktop_post_paths
+        and request.is_json
     ):
         return
 

@@ -6,6 +6,7 @@
   <div class="stat"><dt>Update subscribers</dt><dd><a href="{{ url_for('admin.subscribers') }}">{{ stats.subscribers }}</a></dd></div>
   <div class="stat"><dt>New feedback</dt><dd><a href="{{ url_for('admin.feedback', status='new') }}">{{ stats.feedback_new }}</a></dd></div>
   <div class="stat"><dt>New support requests</dt><dd><a href="{{ url_for('admin.support', status='new') }}">{{ stats.support_new }}</a></dd></div>
+  <div class="stat"><dt>New desktop submissions</dt><dd><a href="{{ url_for('admin.desktop_submissions', status='new') }}">{{ stats.desktop_submissions_new }}</a></dd></div>
   <div class="stat"><dt>Active sessions</dt><dd>{{ stats.sessions }}</dd></div>
   <div class="stat"><dt>Published releases</dt><dd><a href="{{ url_for('admin.releases') }}">{{ stats.releases_published }}</a></dd></div>
 </dl>
