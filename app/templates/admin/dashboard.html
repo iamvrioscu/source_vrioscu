@@ -1,7 +1,7 @@
 {% extends 'admin/_shell.html' %}
 {% block admin %}
 <div class="shell__head"><div><h1>Overview</h1><p>Website activity and application status.</p></div></div>
-<dl class="stats">
+<dl class="stats"><div class="stat"><dt>Launch interest</dt><dd><a href="{{ url_for('admin.launch_interest') }}">{{ stats.launch_interest }}</a></dd></div><div class="stat"><dt>Active visitors &middot; 5 min</dt><dd><a href="{{ url_for('admin.analytics') }}">{{ stats.active_visitors }}</a></dd></div>
   <div class="stat"><dt>Accounts</dt><dd><a href="{{ url_for('admin.users') }}">{{ stats.users }}</a></dd></div>
   <div class="stat"><dt>Update subscribers</dt><dd><a href="{{ url_for('admin.subscribers') }}">{{ stats.subscribers }}</a></dd></div>
   <div class="stat"><dt>New feedback</dt><dd><a href="{{ url_for('admin.feedback', status='new') }}">{{ stats.feedback_new }}</a></dd></div>
@@ -25,7 +25,7 @@
   <h2>Recent administrative activity</h2>
   {% if audit %}
   <div class="table-wrap"><table>
-    <thead><tr><th scope="col">When (UTC)</th><th scope="col">Who</th><th scope="col">Action</th><th scope="col">Target</th></tr></thead>
+    <thead><tr><th scope="col">When (IST)</th><th scope="col">Who</th><th scope="col">Action</th><th scope="col">Target</th></tr></thead>
     <tbody>{% for a in audit %}<tr><td>{{ a.created_at|datetime }}</td><td>{{ a.actor or 'System' }}</td><td><code>{{ a.action }}</code></td><td>{{ a.target }}</td></tr>{% endfor %}</tbody>
   </table></div>
   {% else %}<p>No administrative actions yet.</p>{% endif %}

@@ -15,7 +15,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from ..reference_data import FEEDBACK_CATEGORIES, PURPOSES, SUPPORT_TOPICS, label_for
-from ..time_utils import now_iso
+from ..time_utils import now_iso, display_ist
 
 FORBIDDEN_COLUMNS = {"password_hash", "password", "token_hash", "csrf_secret", "secret", "api_key",
                      "private_key", "session_token", "failed_login_count", "locked_until"}
@@ -75,20 +75,24 @@ def _releases(repos):
 
 
 DATASETS: dict[str, Dataset] = {d.key: d for d in [
+    Dataset('launch_interest','Launch Interest & Subscribers','Consented launch registrations, with unverified email status.',
+            (('first_name','First name'),('last_name','Last name'),('email','Email'),('status','Subscription status (email unverified)'),
+             ('consent_granted','Consent granted'),('registered_at','Registered (IST)'),('confirmed_at','Confirmed (IST)')),
+            lambda repos:repos.launch.export_rows(MAX_ROWS)),
     Dataset("users", "Users", "Accounts with profile fields, role, status and update preference.",
             (("id", "ID"), ("username", "Username"), ("email", "Email"), ("first_name", "First name"),
              ("last_name", "Last name"), ("country", "Country"), ("purpose", "Main use"), ("role", "Role"),
-             ("is_active", "Status"), ("product_updates", "Product updates"), ("created_at", "Created (UTC)"),
-             ("last_login_at", "Last sign-in (UTC)")), _users),
+             ("is_active", "Status"), ("product_updates", "Product updates"), ("created_at", "Created (IST)"),
+             ("last_login_at", "Last sign-in (IST)")), _users),
     Dataset("subscribers", "Product-update subscribers", "Active accounts that opted in to product updates.",
             (("id", "ID"), ("username", "Username"), ("email", "Email"), ("first_name", "First name"),
-             ("last_name", "Last name"), ("opted_in_at", "Opted in (UTC)")),
+             ("last_name", "Last name"), ("opted_in_at", "Opted in (IST)")),
             lambda repos: repos.preferences.subscribers()),
     Dataset("feedback", "Feedback", "Product feedback submitted by signed-in users.",
-            (("id", "ID"), ("created_at", "Submitted (UTC)"), ("username", "Username"), ("category", "Category"),
+            (("id", "ID"), ("created_at", "Submitted (IST)"), ("username", "Username"), ("category", "Category"),
              ("app_version", "App version"), ("status", "Status"), ("message", "Message")), _feedback),
     Dataset("support", "Support requests", "Messages sent through the contact form.",
-            (("id", "ID"), ("created_at", "Submitted (UTC)"), ("name", "Name"), ("email", "Email"),
+            (("id", "ID"), ("created_at", "Submitted (IST)"), ("name", "Name"), ("email", "Email"),
              ("topic", "Topic"), ("status", "Status"), ("message", "Message")), _support),
     Dataset("releases", "Releases", "Release metadata for every channel, with download counts.",
             (("id", "ID"), ("version", "Version"), ("channel", "Channel"), ("release_date", "Release date"),
@@ -124,8 +128,13 @@ def _write_sheet(ws, title, columns, records):
 def build_dataset(repos, key: str) -> tuple[bytes, str, int]:
     ds = DATASETS[key]
     records = ds.fetch(repos)
+    columns = ds.columns
+    for record in records:
+        for field,label in columns:
+            if '(IST)' in label and record.get(field):
+                record[field] = display_ist(record[field])
     wb = Workbook()
-    _write_sheet(wb.active, ds.title, ds.columns, records)
+    _write_sheet(wb.active, ds.title, columns, records)
     wb.properties.creator = "VRIOSCU website"
     wb.properties.title = f"VRIOSCU {ds.title} export"
     buf = io.BytesIO()

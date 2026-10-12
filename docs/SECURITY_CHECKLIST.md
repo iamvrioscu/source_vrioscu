@@ -57,12 +57,12 @@ Status key: **✔ implemented and tested** · **◐ implemented, needs operator 
 | SQL injection | ✔ | Parameterised queries only; dynamic identifiers from fixed allowlists; `LIKE` escaping; test with payloads |
 | CSRF | ✔ | Synchronizer tokens on all unsafe methods + Origin check |
 | CORS | ✔ | Same-origin; allowlisted origins only for public read-only release GETs |
-| Request size limit | ✔ | 64 KB (app) and nginx `client_max_body_size 64k` |
+| Request size limit | ✔ | 64 KiB metadata/forms; only authenticated raw installer chunks allow 8 MiB; total installer size bounded |
 | Open redirect | ✔ | `safe_next` accepts only same-site relative paths; tests |
 | Spreadsheet formula injection | ✔ | `safe_cell`; test |
 | No arbitrary command execution | ✔ | No `subprocess`, `os.system`, `eval`, `exec` anywhere in `app/` |
 | No unsafe deserialisation | ✔ | No `pickle`/`yaml.load`; JSON only |
-| No user-controlled file paths | ✔ | No file uploads; static served by Flask/nginx with traversal protection; test |
+| No user-controlled file paths | ✔ | Installer paths use random strict keys; private storage, owner checks, symlink rejection and traversal tests |
 | Safe download handling | ✔ | HTTPS-only, no private hosts, optional host allowlist, re-validated on redirect; the site never serves or runs executables |
 | Spam protection on contact form | ✔ | Honeypot + rate limit |
 
@@ -95,7 +95,7 @@ Status key: **✔ implemented and tested** · **◐ implemented, needs operator 
 | Database file `0600`, directory `0700` | ✔ | `db.py` and systemd `UMask=0077`; test |
 | SQLite never exposed over HTTP | ✔ | No route serves it; tests |
 | Backups integrity-checked, `0600` | ✔ | `backup_db.py`; tests |
-| Off-host backups | ◐ | EBS snapshots or S3 (BACKUP_RESTORE.md) |
+| Off-host backups | ◐ | Encrypted EBS snapshots or direct encrypted copies; include installers (INSTALLER_STORAGE.md) |
 | Data minimisation | ✔ | No IPs, user agents or analytics stored; download counts anonymous |
 
 ## Host and supply chain

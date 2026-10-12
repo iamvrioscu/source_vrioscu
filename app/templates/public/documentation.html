@@ -1,81 +1,17 @@
 {% extends 'base.html' %}
-{% set toc = [('requirements','Requirements'),('install','Download and install'),('first-run','First run'),('report','Reading the report'),('network','Network information'),('ai','AI Validation Insights'),('updates','Updates and channels'),('account','Website account'),('help','Getting help')] %}
+{% set toc = [('availability','Availability'),('requirements','Requirements'),('install','Installation'),('first-run','Validation workflow'),('report','Reading the report'),('network','Network context'),('ai','AI availability'),('updates','Releases'),('account','Website account'),('help','Getting help')] %}
 {% block content %}
-<header class="page-head"><div class="wrap">
-  <h1>Documentation</h1>
-  <p class="lede">Install {{ product.name }}, run your first validation and understand the report it produces.</p>
-</div></header>
-<section class="section"><div class="wrap docs">
-  <nav class="docs__nav" aria-label="Documentation sections">
-    <p class="doc-nav-title">On this page</p>
-    <ul class="doc-nav">{% for id, label in toc %}<li><a href="#{{ id }}">{{ label }}</a></li>{% endfor %}</ul>
-  </nav>
-  <div class="prose">
-    <h2 id="requirements">Requirements</h2>
-    <ul>
-      <li>{{ product.windows_compatibility }}</li>
-      <li>Network access to the endpoints you want to validate, from the machine running {{ product.name }}</li>
-      <li>Permission to install software on the device. On managed devices this may need approval from your IT team.</li>
-    </ul>
-
-    <h2 id="install">Download and install</h2>
-    <ol>
-      <li>Get the installer from the <a href="{{ url_for('public.download') }}">download page</a>.</li>
-      <li>Verify its SHA-256 checksum with <code>Get-FileHash -Algorithm SHA256</code> in PowerShell and compare it with the value on the download page. <a href="{{ url_for('public.download') }}#verify">Step-by-step instructions</a>.</li>
-      <li>Run the installer.</li>
-    </ol>
-    {% if not product.installer_signed %}
-    <p>The {{ product.channel_label }} installer isn't digitally signed yet, so Windows may warn about an unrecognised publisher. Keep your security settings as they are. If the file is blocked on a managed device, ask your IT team to review it. <a href="{{ url_for('public.public_beta') }}#signing">More about signing</a>.</p>
-    {% endif %}
-
-    <h2 id="first-run">First run</h2>
-    <p>Every validation follows the same seven steps. See <a href="{{ url_for('public.how_it_works') }}">How it works</a> for the full picture.</p>
-    <ol>
-      <li><strong>Configure validation.</strong> Choose capture options, and decide whether to use AI Validation Insights for this run.</li>
-      <li><strong>Enter target endpoints.</strong> Add the web endpoints to check. Reusing the same list keeps runs comparable.</li>
-      <li><strong>Run validation.</strong> {{ product.name }} checks each endpoint from this machine and network.</li>
-      <li><strong>Capture visual evidence.</strong> Screenshots and technical details are recorded during the run.</li>
-      <li><strong>Analyze collected evidence.</strong> Evidence is organised per endpoint.</li>
-      <li><strong>Generate technical report.</strong> A PDF is produced from the run.</li>
-      <li><strong>Review report.</strong> Check the report before sharing it.</li>
-    </ol>
-    <p>Run from the machine and network you actually need evidence for. A result from your desk doesn't prove an endpoint works from a remote site.</p>
-
-    <h2 id="report">Reading the report</h2>
-    <p>Reports always use the same sections, in this order:</p>
-    <ol>
-      <li><strong>Cover.</strong> Identifies the report and the run.</li>
-      <li><strong>Test and environment information.</strong> What was tested and in what context.</li>
-      <li><strong>Network environment.</strong> Where the test ran from. See <a href="#network">Network information</a>.</li>
-      <li><strong>Validation summary.</strong> Results across all endpoints. Start here.</li>
-      <li><strong>Endpoint technical metrics.</strong> Detailed results for each endpoint.</li>
-      <li><strong>Visual evidence.</strong> Screenshots captured during the run.</li>
-      <li><strong>AI Validation Insights.</strong> Only present if you enabled them.</li>
-    </ol>
-
-    <h2 id="network">Network information</h2>
-    <p>The desktop application can record details about the machine and network the run executed from, such as hostname, local IP address, gateway, DNS servers, Wi-Fi SSID, signal strength, frequency and channel, and network adapter information.</p>
-    <p>This information comes from Windows on your device and appears in your report. It isn't collected by this website, and a website can't read it from your browser.</p>
-    <p>Reports can therefore contain internal network details. Share them the way you'd share any internal technical document.</p>
-
-    <h2 id="ai">AI Validation Insights</h2>
-    <p>AI Validation Insights are optional. When enabled for a run, the report includes an AI-generated interpretation of the collected evidence. Validation, capture and reporting all work with them turned off.</p>
-    <p>If your organisation has rules about AI tools, check them before enabling this option, and treat AI-generated text as a starting point for your own review, not as a conclusion.</p>
-
-    <h2 id="updates">Updates and channels</h2>
-    <p>New versions are announced on the <a href="{{ url_for('public.download') }}">download page</a>, with release notes and a checksum for each installer. Releases are published in channels:</p>
-    <ul>
-      <li><strong>Public Beta.</strong> Early releases available to everyone. The current channel.</li>
-      <li><strong>Stable.</strong> General releases, once available.</li>
-    </ul>
-    <p>Some releases may be marked as required when an earlier version is no longer supported.</p>
-
-    <h2 id="account">Website account</h2>
-    <p>A {{ product.name }} website account lets you send product feedback, choose whether to receive product-update emails, and manage or export the data this website holds about you. You can delete your account at any time from your account settings.</p>
-    <p>Product-update emails are optional and separate from your account. You can turn them on or off without affecting anything else.</p>
-
-    <h2 id="help">Getting help</h2>
-    <p>Use the <a href="{{ url_for('public.contact') }}">contact form</a> for installation, account or report questions. Include the {{ product.name }} version you're using and what you expected to happen. Don't include passwords or other secrets in your message.</p>
-  </div>
-</div></section>
+<header class="page-head"><div class="wrap"><span class="eyebrow">DOCUMENTATION / PRODUCT GUIDE</span><h1>Understand the workflow.<br>Read the evidence.</h1><p class="lede">A guide to the Windows validation workflow, the actual report output and your companion website account.</p></div></header>
+<section class="section"><div class="wrap docs"><nav class="docs__nav" aria-label="Documentation sections"><p class="doc-nav-title">ON THIS PAGE</p><ul class="doc-nav">{% for id,label in toc %}<li><a href="#{{ id }}">{{ label }}</a></li>{% endfor %}</ul></nav><div class="prose">
+<h2 id="availability">Windows application availability</h2><p>{% if public_release %}VRIOSCU {{ public_release.version }} is published for Windows.{% else %}VRIOSCU for Windows is coming soon. No installer has been published yet.{% endif %} The <a href="{{ url_for('public.download') }}">Windows page</a> will carry official release information.</p>
+<h2 id="requirements">Requirements</h2><ul><li>{{ product.windows_compatibility }}</li><li>Network access to the target endpoints from the machine running the validation</li><li>Permission to install software on that device when the application is released</li></ul>
+<h2 id="install">Download and installation</h2><p>Installation instructions apply once an official release is published. Download only from the official Windows page, review the release notes and the published installer signing status.</p><p>On managed devices, follow your organization's software approval process. <a href="{{ url_for('public.public_beta') }}#signing">Release and signing information</a>.</p>
+<h2 id="first-run">The validation workflow</h2><p>The desktop workspace lets you configure a test run, deployment context, render wait and capture mode, then enter target URLs or import a CSV.</p><ol><li><strong>Validate.</strong> Run the supported endpoint checks from your Windows machine.</li><li><strong>Capture.</strong> Record screenshots and technical metrics during the run.</li><li><strong>Analyze.</strong> Review endpoint outcomes and the underlying evidence.</li><li><strong>Document.</strong> Generate and review the Validation & Evidence Report.</li></ol><p>Run from the machine and network you actually need evidence for. Results from one location do not establish behavior from another.</p><p><a href="{{ url_for('public.how_it_works') }}">Explore the four-step workflow →</a></p>
+<h2 id="report">Reading the report</h2><p>The supplied 23-page sample contains:</p><ol><li><strong>Cover.</strong> Report identity, operator and generation timestamp.</li><li><strong>Test details & environment.</strong> Configuration, runtime and local network context.</li><li><strong>Validation summary.</strong> Overall counts, run timing and endpoint outcomes.</li><li><strong>Individual endpoint pages.</strong> Technical metrics, validation health and visual evidence for each URL.</li><li><strong>AI Validation Insights.</strong> Evidence-driven assessment, observations, potential issues and recommended action, with an explicit unavailable state when analysis cannot be supplied.</li></ol><p>Begin with the summary, then inspect endpoint details. In the sample, two endpoints are reachable and render a page but return HTTP 403, so they are marked for review.</p><p><a href="{{ url_for('public.reports') }}">Inspect real report-page images →</a></p>
+<h2 id="network">Network context</h2><p>The sample report includes host device, operating system, browser runtime, local IP, gateway, DNS servers and Wi-Fi information. These are collected by the desktop application from the execution environment.</p><p>This website does not inspect your machine or network configuration. Reports may contain internal technical information; consider their contents before sharing.</p>
+<h2 id="ai">AI Validation Insights</h2><p>The new supplied report includes AI Validation Insights for individual endpoint captures. For chatgpt.com, the assessment explains that the endpoint was reachable and rendered content, while HTTP 403 requires review. The report suggests reviewing the URL path, access permissions and authentication policies.</p><p>Its analysis model is labelled &ldquo;VRIOSCU Hybrid Diagnostic Engine&rdquo; and confidence &ldquo;High (Deterministic Analysis)&rdquo;. These pages show historical desktop report output. Live AI analysis is not available on this website.</p><p>Page 19 records &ldquo;AI Validation Insights Unavailable&rdquo; while retaining deterministic evidence, timings and screenshots. Review all automated interpretations against the underlying evidence; they do not establish a security guarantee.</p>
+<h2 id="updates">Releases and channels</h2><p>The official <a href="{{ url_for('public.download') }}">Windows page</a> and <a href="{{ url_for('public.public_beta') }}">release information page</a> will announce public availability. The release system supports Public Beta and Stable channels, with installer metadata and release notes.</p><p>No public installer or update metadata is exposed while the release is marked coming soon.</p>
+<h2 id="account">Your website account</h2><p>An account lets you send feedback, manage your profile, save a product-update preference, export your personal website data and delete your account. These account features are separate from desktop validation.</p><p>Update preferences are opt-in and can be changed in account settings. Automated email delivery is not connected yet; return to the release page for availability announcements.</p>
+<h2 id="help">Getting help</h2><p>Use the <a href="{{ url_for('public.contact') }}">contact form</a> for product, account or report questions. Include the version and what you expected to happen where relevant. Do not include passwords or other secrets.</p>
+</div></div></section>
 {% endblock %}

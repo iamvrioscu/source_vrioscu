@@ -1,7 +1,7 @@
 # VRIOSCU website
 
 Official website and account platform for **VRIOSCU — Endpoint Validation & Evidence Capture**.
-*Validate. Capture. Document.*
+*Validate. Capture. Analyze. Document.*
 
 The Windows desktop application is the product: it validates endpoints, captures
 evidence, collects local machine/network details and generates PDF reports.
@@ -10,6 +10,12 @@ It never pretends to collect machine or network information from a browser, and
 it never receives validation runs, screenshots or reports.
 
 ## Stack
+
+The October 2026 UI redesign, asset provenance, availability controls and
+verification results are documented in [UI_REDESIGN](docs/UI_REDESIGN.md).
+Public Windows downloads follow **Admin > Releases** automatically. No eligible
+published release means Coming Soon; publishing exposes the real installer, and
+unpublishing or deleting the last eligible release restores Coming Soon.
 
 | Layer      | Choice | Why |
 |------------|--------|-----|
@@ -33,8 +39,10 @@ flask --app wsgi run --port 5000      # http://127.0.0.1:5000
 ```
 
 Optional:
-- Add the self-hosted fonts described in `app/static/fonts/README.md`.
-- Generate the social share image: `pip install pillow && python scripts/make_og_image.py`.
+- Install asset/QA tools: `pip install -r requirements-dev.txt`.
+- Regenerate the branded social image: `python scripts/make_og_image.py`.
+- See `docs/UI_REDESIGN.md` for report assets, admin analytics and launch-list controls.
+- Run isolated browser QA: `python scripts/check_experience.py` (disposable database).
 
 ## Tests
 
@@ -42,7 +50,8 @@ Optional:
 python -m unittest discover -s tests -t . -v
 ```
 
-99 tests, standard library only (no pytest needed). See `docs/TEST_REPORT.md`.
+103 cases, using unittest (no pytest needed). On Windows, one POSIX-only
+permission check is skipped. See `docs/UI_REDESIGN.md` for the latest results.
 
 ## Project layout
 

@@ -19,7 +19,7 @@ from ..repositories.support import STATUSES as SUPPORT_STATUSES
 from ..security import admin_required, check_rate, csrf_token, desktop_credential_required, login_required
 from ..services import auth as auth_service
 from ..services.auth import hash_password, public_user, token_hash
-from ..services.releases import current_download, public_release
+from ..services.releases import public_release, channel_download, published_downloads
 from ..validation import ValidationError, semver_tuple, validate
 from .admin import export_response, save_release
 
@@ -230,7 +230,7 @@ def latest_release():
     channel = request.args.get("channel", "PUBLIC_BETA").upper()
     if channel not in PUBLIC_CHANNELS:
         abort(404, description="Unknown or non-public channel.")
-    rel = g.repos.releases.latest(channel)
+    rel = channel_download(g.repos,channel,current_app.config['SETTINGS'].download_allowed_hosts)
     if not rel:
         abort(404, description="No published release in this channel.")
     out = public_release(rel, url_for("public.download_release", release_id=rel["id"]))
@@ -248,7 +248,7 @@ def latest_release():
 @bp.get("/releases")
 def list_releases():
     check_rate("api_public", 120, 60)
-    items = g.repos.releases.list(channels=PUBLIC_CHANNELS, published_only=True)
+    items = published_downloads(g.repos,current_app.config['SETTINGS'].download_allowed_hosts)
     return jsonify(releases=[public_release(r, url_for("public.download_release", release_id=r["id"]))
                              for r in items])
 
@@ -516,6 +516,8 @@ def admin_support():
 
 def _admin_release(r):
     out = dict(r)
+    if r.get('storage_key'):
+        out['download_url'] = current_app.config['SETTINGS'].base_url + url_for('public.download_release', release_id=r['id']) if r['is_published'] else None
     for k in ("is_mandatory", "is_signed", "is_published"):
         out[k] = bool(out[k])
     return out
@@ -541,7 +543,10 @@ def admin_create_release():
 @admin_required
 def admin_update_release(release_id):
     rel = g.repos.releases.get(release_id) or abort(404)
-    merged = {**rel, **_json_body()}
+    updates = _json_body()
+    merged = {**rel, **updates}
+    if "sha256" not in updates:
+        merged.pop("sha256", None)
     try:
         save_release(merged, release_id)
     except ValidationError as e:

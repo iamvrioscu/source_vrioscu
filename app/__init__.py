@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import logging
+import hashlib
 import secrets
 import time
+from pathlib import Path
 
 import click
 from flask import Flask, g, jsonify, render_template, request
@@ -17,7 +19,8 @@ from .logging_setup import configure_logging, log_event
 from .reference_data import COUNTRIES, FEEDBACK_CATEGORIES, PURPOSES, SUPPORT_TOPICS, label_for
 from .repositories import Repositories
 from .services import auth as auth_service
-from .services.releases import human_size
+from .services.releases import human_size, current_download
+from .time_utils import display_ist
 
 log = logging.getLogger("vrioscu.app")
 
@@ -33,12 +36,22 @@ def create_app(overrides: dict | None = None) -> Flask:
         DEBUG=False,
         TESTING=settings.is_test,
         PROPAGATE_EXCEPTIONS=False,
-        MAX_CONTENT_LENGTH=64 * 1024,          # forms and JSON only; no uploads
+        MAX_CONTENT_LENGTH=64 * 1024,          # only raw upload chunks get a larger limit
         JSON_SORT_KEYS=False,
         TEMPLATES_AUTO_RELOAD=settings.env == "development",
         SEND_FILE_MAX_AGE_DEFAULT=60 * 60 * 24 * 7,
     )
     app.json.sort_keys = False
+    stamp = hashlib.sha256()
+    for asset in sorted(Path(app.static_folder).rglob('*')):
+        if asset.is_file():
+            stamp.update(f'{asset.relative_to(app.static_folder)}:{asset.stat().st_mtime_ns}:{asset.stat().st_size}'.encode())
+    app.config['ASSET_VERSION'] = stamp.hexdigest()[:12]
+
+    @app.url_defaults
+    def _asset_version(endpoint, values):
+        if endpoint == 'static':
+            values.setdefault('v',app.config['ASSET_VERSION'])
 
     if settings.trusted_proxy_count:
         n = settings.trusted_proxy_count
@@ -53,6 +66,9 @@ def create_app(overrides: dict | None = None) -> Flask:
     # ------------------------------------------------------------ lifecycle
     @app.before_request
     def _before():
+        if request.endpoint == 'uploads.chunk':
+            from .services.installers import CHUNK_BYTES
+            request.max_content_length = CHUNK_BYTES
         g.request_id = request.headers.get("X-Request-ID", "")[:64] or secrets.token_hex(8)
         g.started = time.perf_counter()
         g.db = connect(settings.database_path)
@@ -99,12 +115,14 @@ def create_app(overrides: dict | None = None) -> Flask:
     def _ctx():
         return {"product": settings.product, "current_user": g.get("user"), "csrf_token": security.csrf_token,
                 "base_url": settings.base_url, "PURPOSES": PURPOSES, "COUNTRIES": COUNTRIES,
-                "FEEDBACK_CATEGORIES": FEEDBACK_CATEGORIES, "SUPPORT_TOPICS": SUPPORT_TOPICS}
+                "FEEDBACK_CATEGORIES": FEEDBACK_CATEGORIES, "SUPPORT_TOPICS": SUPPORT_TOPICS,
+                "public_release": current_download(g.repos, settings.product, settings.download_allowed_hosts),
+                "launch_settings": g.repos.launch.settings()}
 
     app.jinja_env.globals["csrf_token"] = security.csrf_token  # visible inside imported macros
     app.jinja_env.filters["label_for"] = lambda key, choices: label_for(choices, key)
     app.jinja_env.filters["human_size"] = human_size
-    app.jinja_env.filters["datetime"] = lambda v: (v or "").replace("T", " ").replace("Z", " UTC")
+    app.jinja_env.filters["datetime"] = display_ist
     app.jinja_env.filters["date"] = lambda v: (v or "")[:10]
 
     # ------------------------------------------------------------ blueprints
@@ -113,7 +131,9 @@ def create_app(overrides: dict | None = None) -> Flask:
     from .routes.account import bp as account_bp
     from .routes.admin import bp as admin_bp
     from .routes.api import bp as api_bp
-    for bp in (public_bp, auth_bp, account_bp, admin_bp, api_bp):
+    from .routes.engagement import bp as engagement_bp
+    from .routes.uploads import bp as uploads_bp
+    for bp in (public_bp, auth_bp, account_bp, admin_bp, api_bp, engagement_bp, uploads_bp):
         app.register_blueprint(bp)
 
     # ------------------------------------------------------------ errors
@@ -122,7 +142,7 @@ def create_app(overrides: dict | None = None) -> Flask:
             names = {400: "bad_request", 401: "unauthenticated", 403: "forbidden", 404: "not_found",
                      405: "method_not_allowed", 409: "conflict", 413: "payload_too_large",
                      415: "unsupported_media_type", 422: "validation_failed", 429: "rate_limited",
-                     500: "server_error"}
+                     500: "server_error", 507: 'insufficient_storage'}
             body = jsonify(error={"code": names.get(code, "error"), "message": message,
                                   "request_id": g.get("request_id")})
             resp = (body, code)
@@ -136,6 +156,8 @@ def create_app(overrides: dict | None = None) -> Flask:
     @app.errorhandler(HTTPException)
     def _http_error(e: HTTPException):
         headers = {"Retry-After": str(e.retry_after)} if isinstance(e, security.RateLimited) else None
+        if e.code == 416:
+            headers = {key:value for key,value in e.get_headers() if key.lower() == 'content-range'}
         defaults = {400: "The request couldn't be processed. Check the form and try again.",
                     403: "You don't have access to this page.", 404: "This page doesn't exist.",
                     405: "That action isn't available here.", 413: "The request is too large.",

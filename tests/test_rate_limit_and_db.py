@@ -106,6 +106,6 @@ class PublicPagesTests(AppTestCase):
 
     def test_home_content(self):
         html = self.client.get("/").get_data(as_text=True)
-        for text in ("Endpoint Validation &amp; Evidence Capture", "Validate.", "Capture.", "Document.",
-                     "Download VRIOSCU", "Login"):
+        for text in ("Endpoint Validation &amp; Evidence Capture", "Validate", "Capture", "Document",
+                     "Coming soon", "Sign in"):
             self.assertIn(text, html)

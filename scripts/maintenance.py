@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import load_settings  # noqa: E402
 from app.db import connect, migrate, transaction  # noqa: E402
 from app.repositories import Repositories  # noqa: E402
+from app.services.installers import InstallerStore  # noqa: E402
 
 
 def main() -> int:
@@ -18,6 +19,10 @@ def main() -> int:
     conn = connect(s.database_path)
     try:
         r = Repositories(conn)
+        store = InstallerStore(s)
+        if s.release_storage_path.is_dir():
+            removed = store.cleanup(r)
+            print(f'Expired installer transfers cleaned: {removed}')
         with transaction(conn):
             r.sessions.purge_expired()
             r.rate_limits.purge_before(int(time.time()) - 86400)

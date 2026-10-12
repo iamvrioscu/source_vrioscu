@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 
 from app.config import ConfigError, load_settings
 from tests.helpers import AppTestCase
@@ -8,7 +9,7 @@ from tests.helpers import AppTestCase
 class ProductionConfigTests(unittest.TestCase):
     def _load(self, **over):
         base = {"env": "production", "secret_key": "s" * 48, "base_url": "https://vrioscu.com",
-                "database_path": "/tmp/vr-prod-test.db"}
+                "database_path": "/tmp/vr-prod-test.db", 'release_storage_path': str(Path.home() / 'vrioscu-test-storage')}
         base.update(over)
         return load_settings(base)
 
@@ -16,6 +17,17 @@ class ProductionConfigTests(unittest.TestCase):
         s = self._load()
         self.assertTrue(s.is_production)
         self.assertTrue(s.https)
+
+    def test_installer_storage_must_be_explicit_private_persistent_path(self):
+        import tempfile
+        from unittest.mock import patch
+        from app.config import BASE_DIR
+        for bad in ('relative/storage', str(BASE_DIR/'uploads'), str(Path(tempfile.gettempdir())/'installers')):
+            with self.assertRaises(ConfigError): self._load(release_storage_path=bad)
+        with patch.dict(os.environ,{'RELEASE_STORAGE_PATH':''}):
+            with self.assertRaises(ConfigError): self._load(release_storage_path=None)
+        for limit in (0,127,9*1024**3):
+            with self.assertRaises(ConfigError): self._load(release_max_bytes=limit)
 
     def test_rejects_missing_or_weak_secret(self):
         for bad in ("short", "change-me"):
@@ -42,7 +54,7 @@ class ProductionConfigTests(unittest.TestCase):
     def test_debug_never_enabled(self):
         from app import create_app
         app = create_app({"env": "production", "secret_key": "s" * 48, "base_url": "https://vrioscu.com",
-                          "database_path": "/tmp/vr-prod-test2.db"})
+                          "database_path": "/tmp/vr-prod-test2.db", 'release_storage_path': str(Path.home() / 'vrioscu-test-storage')})
         self.assertFalse(app.debug)
         self.assertFalse(app.config["DEBUG"])
 
@@ -122,6 +134,7 @@ class FileExposureTests(AppTestCase):
             self.assertNotIn(b"CREATE TABLE", r.data)
             self.assertNotIn(b"SECRET_KEY", r.data)
 
+    @unittest.skipUnless(os.name == "posix", "POSIX mode bits do not represent Windows ACLs")
     def test_database_file_permissions(self):
         mode = os.stat(self.db_path).st_mode & 0o777
         self.assertEqual(mode, 0o600)

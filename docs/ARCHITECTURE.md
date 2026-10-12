@@ -90,16 +90,25 @@ coarser limit at the edge.
 | Password change / account delete per user | 5 / 15 min |
 | Admin exports per admin | 30 / hour |
 | Public release API per IP | 120 / min |
-| Download redirects per IP | 30 / 5 min |
+| Downloads per IP | 30 / 5 min |
+| Upload starts per admin | 20 / hour; three active transfers |
+| Upload chunks per admin | 1200 / hour; maximum 8 MiB per chunk |
 
 ## 9. Central configuration
 
 `app/config.py` is the single source for product name, website URL, version,
-channel, Public Beta status, Windows compatibility, signing status, fallback
-download URL / release notes / checksum, and contact addresses. Templates read
+channel, Public Beta status, Windows compatibility, legacy installer metadata
+and contact addresses. Published database releases are the only public download authority. Templates read
 it through the `product` variable. Production refuses to start if `SECRET_KEY`
 is weak, `BASE_URL` isn't HTTPS, `DOWNLOAD_URL` isn't HTTPS, or the database
 path is inside a public directory.
+
+Direct uploads use the same release catalog. Only a generated storage key and
+verified metadata live in SQLite; installer bytes reside in a configured private
+persistent directory outside the checkout. Per-transfer OS locks and committed
+offsets support retries across workers. Publication re-verifies saved bytes;
+public download authorization precedes Nginx internal delivery or Werkzeug
+streaming. See [INSTALLER_STORAGE.md](INSTALLER_STORAGE.md).
 
 ## 10. Replacing SQLite with PostgreSQL
 
@@ -117,6 +126,27 @@ The repository interface (methods returning plain dicts) is the contract.
 ## 11. Front end
 
 Server-rendered, semantic HTML; one CSS file, one small progressive-enhancement
-script (mobile menu, copy-to-clipboard, confirm dialogs). No inline scripts or
+script (mobile navigation, workflow demonstrations, report magnification, theme
+preferences and consent-only analytics), plus an early theme bootstrap. No inline scripts or
 styles, so the CSP needs no `unsafe-inline`. Diagrams are inline SVG styled from
 CSS. Fonts are self-hosted (no third-party requests).
+
+
+## Launch interest, analytics and time
+
+Migration `0004_launch_and_analytics.sql` adds persistent launch settings and
+anonymous launch registrations; existing account update preferences remain intact.
+Public forms and administrative mutations retain authorization, CSRF and rate limits.
+Admin changes are audited. Launch emails are unverified; no mail transport exists.
+
+Analytics requires explicit consent and excludes authenticated users, DNT and GPC.
+Random signed cookies identify anonymous browsers; there is no IP or account linkage.
+Views are idempotent per visitor/event ID. A visit ends after 30 idle minutes, active
+means activity in five minutes, and visible pages refresh activity once per minute.
+Queries use indexed UTC timestamps with IST calendar boundaries. A daily cleanup
+on analytics activity or dashboard access removes records older than 90 days.
+
+All historical schema writers stored UTC. The shared datetime formatter converts
+aware and historical naive UTC values to Asia/Kolkata; date-only release values
+remain calendar dates. Public HTML and release endpoints use no-store. Static
+URLs include a startup-derived asset stamp to invalidate older cached UI assets.

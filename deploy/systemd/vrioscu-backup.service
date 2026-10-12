@@ -14,4 +14,4 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/lib/vrioscu /var/backups/vrioscu
+ReadWritePaths=/var/lib/vrioscu /var/lib/vrioscu-releases /var/backups/vrioscu

@@ -55,7 +55,8 @@ RELEASE = [
     F("release_notes_url", "Release notes URL", kind="https_url", required=False, max_len=500),
     F("download_url", "Download URL", kind="https_url", max_len=500, extra={"restrict_hosts": True}),
     F("installer_filename", "Installer file name", kind="filename", max_len=124),
-    F("sha256", "SHA-256", kind="sha256", max_len=64),
+    # Optional integrity metadata supplied by API integrations, never required by the UI.
+    F("sha256", "SHA-256", kind="sha256", required=False, max_len=64),
     F("file_size_bytes", "File size (bytes)", kind="int", min_value=1, max_value=8 * 1024 ** 3),
     F("minimum_supported_version", "Minimum supported version", kind="semver", required=False, max_len=40),
     F("is_mandatory", "Mandatory update", kind="bool"),

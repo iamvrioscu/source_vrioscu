@@ -1,0 +1,9 @@
+<form class="launch-form" method="post" action="{{ url_for('engagement.launch_interest') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="launch-name-row"><div class="field"><label for="launch-first">First name</label><input id="launch-first" name="first_name" autocomplete="given-name" maxlength="80" required value="{{ (values or {}).get('first_name','') }}"></div><div class="field"><label for="launch-last">Last name</label><input id="launch-last" name="last_name" autocomplete="family-name" maxlength="80" required value="{{ (values or {}).get('last_name','') }}"></div></div>
+  <div class="field"><label for="launch-email">Email address</label><input id="launch-email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@company.com" value="{{ (values or {}).get('email','') }}"></div>
+  <div class="visually-hidden" aria-hidden="true"><label for="launch-website">Website</label><input id="launch-website" name="website" tabindex="-1" autocomplete="off"></div>
+  <label class="launch-consent"><input type="checkbox" name="consent" value="1" required> <span>I’d like VRIOSCU launch and release news by email. I have read the <a href="{{ url_for('public.privacy') }}#launch-privacy">privacy notice</a>.</span></label>
+  <button class="btn" type="submit">{{ launch_settings.button_label }} <span aria-hidden="true">↗</span></button>
+  <p class="help">We save your interest. Email ownership is unverified; automated emails are not connected yet. To withdraw, <a href="{{ url_for('public.contact') }}">contact us</a>.</p>
+</form>

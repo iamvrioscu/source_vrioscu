@@ -17,8 +17,9 @@ class BackupRestoreTests(AppTestCase):
         dest = Path(self.tmp) / "backups"
         archive = backup(db, dest, keep_days=14)
         self.assertTrue(archive.name.endswith(".db.gz"))
-        self.assertEqual(os.stat(archive).st_mode & 0o777, 0o600)
-        self.assertEqual(os.stat(dest).st_mode & 0o777, 0o700)
+        if os.name == "posix":
+            self.assertEqual(os.stat(archive).st_mode & 0o777, 0o600)
+            self.assertEqual(os.stat(dest).st_mode & 0o777, 0o700)
         with gzip.open(archive) as f:
             self.assertTrue(f.read(16).startswith(b"SQLite format 3"))
 
@@ -33,7 +34,8 @@ class BackupRestoreTests(AppTestCase):
         conn = sqlite3.connect(db)
         self.assertEqual(conn.execute("SELECT username FROM users").fetchone()[0], "alice")
         conn.close()
-        self.assertEqual(os.stat(db).st_mode & 0o777, 0o600)
+        if os.name == "posix":
+            self.assertEqual(os.stat(db).st_mode & 0o777, 0o600)
 
     def test_restore_rejects_corrupt_backup(self):
         bad = Path(self.tmp) / "bad.db.gz"

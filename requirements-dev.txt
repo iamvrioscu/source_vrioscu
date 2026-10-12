@@ -1,0 +1,5 @@
+# Optional asset preparation and browser QA tools; not production dependencies.
+-r requirements.txt
+Pillow>=12,<13
+PyMuPDF>=1.26,<2
+playwright>=1.50,<2

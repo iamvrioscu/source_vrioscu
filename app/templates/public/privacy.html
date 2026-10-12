@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <header class="page-head"><div class="wrap">
+  <span class="eyebrow">YOUR DATA / YOUR CHOICES</span>
   <h1>Privacy</h1>
   <p class="lede">What this website collects, why, and how long it keeps it. Notice version {{ product.privacy_notice_version }}.</p>
 </div></header>
@@ -29,7 +30,9 @@
     <h2>Sign-in sessions and security</h2>
     <p>When you sign in, the website sets a cookie containing a random session identifier. We store a hash of that identifier, its creation time, last activity and expiry. Sessions end when you sign out, after a period of inactivity, or after a fixed maximum time.</p>
     <p>To protect forms from abuse, the website sets a short-lived security cookie and counts recent requests. Those counters are keyed by a keyed hash of your IP address, not the address itself, and are deleted automatically within a day.</p>
-    <p>The website uses only these essential cookies. It doesn't use advertising or analytics cookies, and doesn't load third-party tracking scripts.</p>
+    <p>Essential security cookies work independently of optional analytics. A local theme preference remembers light or dark mode. No advertising or third-party tracking scripts are loaded.</p>
+    <h2 id="analytics-privacy">Optional first-party analytics</h2><p>Analytics is off until you allow it. A random browser identifier is kept in a first-party cookie for up to 30 days; your allow/decline choice is remembered for 180 days. We store page paths without query strings, event times, visit activity, referrer host names and broad browser/device categories. No IP address, full user agent or account identifier is stored in analytics. Signed-in users, Do Not Track and Global Privacy Control are excluded.</p><p>A page load counts once; a visit ends after 30 minutes of inactivity. A visible page can refresh its activity once per minute. Administrators see aggregate traffic and recent anonymous page activity. Records are removed after 90 days by daily cleanup on analytics activity or dashboard access. Changing to Decline removes the records associated with your current browser identifier and deletes its cookie.</p><p class="privacy-choice" role="status">Current choice: <strong>{{ {'allow':'Allowed', 'decline':'Declined'}.get(request.cookies.get('vr_analytics'), 'Not set (optional analytics is off)') }}</strong>.</p><form method="post" action="{{ url_for('engagement.analytics_consent') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="btn-row"><button class="btn btn--quiet" name="choice" value="decline">Decline / withdraw analytics</button><button class="btn" name="choice" value="allow">Allow analytics</button></div></form>
+    <h2 id="launch-privacy">Launch-interest registrations</h2><p>When you join the launch list, we save your first name, last name, normalized email, registration time, subscription status and the privacy notice version with your explicit consent. This does not create an account or verify email ownership. Automated confirmation and notification emails are not connected. Duplicate submissions preserve the existing registration and consent choice.</p><p>Authorized administrators can review registrations, record an unsubscribe or delete a record. Closing the form does not delete records. Launch registrations are retained until you withdraw or request deletion; use the contact form for either request. Existing account update preferences remain separate.</p>
 
     <h2>Downloads</h2>
     <p>We count how many times each installer is downloaded per day. These counts aren't linked to you or your IP address.</p>
@@ -65,7 +68,7 @@
     <ul>
       <li>Your validation data stays with the desktop app and isn't sent here.</li>
       <li>Product-update emails are opt-in.</li>
-      <li>Essential cookies only, no third-party tracking.</li>
+      <li>Optional analytics requires your choice; no third-party tracking.</li>
       <li>Export or delete your data any time.</li>
     </ul>
   </aside>

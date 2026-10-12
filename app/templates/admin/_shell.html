@@ -6,7 +6,9 @@
   <nav class="shell__nav" aria-label="Administration">
     <ul>
       <li><a href="{{ url_for('admin.dashboard') }}"{% if ep == 'admin.dashboard' %} aria-current="page"{% endif %}>Overview</a></li>
+      <li><a href="{{ url_for('admin.analytics') }}"{% if ep == 'admin.analytics' %} aria-current="page"{% endif %}>Visitor analytics</a></li>
       <li class="group">People</li>
+      <li><a href="{{ url_for('admin.launch_interest') }}"{% if ep in ('admin.launch_interest','admin.launch_settings') %} aria-current="page"{% endif %}>Launch Interest & Subscribers</a></li>
       <li><a href="{{ url_for('admin.users') }}"{% if ep == 'admin.users' %} aria-current="page"{% endif %}>Users</a></li>
       <li><a href="{{ url_for('admin.subscribers') }}"{% if ep == 'admin.subscribers' %} aria-current="page"{% endif %}>Update subscribers</a></li>
       <li class="group">Inbox</li>

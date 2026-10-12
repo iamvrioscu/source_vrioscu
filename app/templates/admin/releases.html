@@ -11,7 +11,7 @@
     <tr>
       <td><strong>{{ r.version }}</strong>{% if r.is_mandatory %} <span class="badge badge--warn">Required</span>{% endif %}<br><code class="hint">{{ r.installer_filename }}</code></td>
       <td>{{ r.channel }}</td>
-      <td>{{ r.release_date }}</td>
+      <td>{{ r.release_date }}<br><span class="hint">Updated {{ r.updated_at|datetime }}</span></td>
       <td>{% if r.is_published %}<span class="badge badge--pass">Published</span>{% else %}<span class="badge badge--muted">Draft</span>{% endif %}</td>
       <td>{{ 'Yes' if r.is_signed else 'No' }}</td>
       <td class="num">{{ totals.get(r.id, 0) }}</td>
@@ -22,6 +22,6 @@
   </tbody>
 </table></div>
 {% else %}
-<div class="table-wrap"><div class="empty"><p>No releases yet.</p><p>Add one when the installer is hosted at an HTTPS address and you have its SHA-256.</p></div></div>
+<div class="table-wrap"><div class="empty"><p>No releases yet.</p><p>Add one when the installer is hosted at an HTTPS address.</p></div></div>
 {% endif %}
 {% endblock %}

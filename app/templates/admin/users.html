@@ -18,7 +18,7 @@
       <td>{{ u.country or '—' }}</td>
       <td>{{ u.purpose|label_for(PURPOSES) if u.purpose else '—' }}</td>
       <td>{{ 'Yes' if u.product_updates else 'No' }}</td>
-      <td>{{ u.created_at|date }}</td>
+      <td>{{ u.created_at|datetime }}</td>
       <td>{% if u.is_active %}<span class="badge badge--pass">Active</span>{% else %}<span class="badge badge--danger">Disabled</span>{% endif %}</td>
       <td>{% if u.id != current_user.id %}
         <form class="inline-form" method="post" action="{{ url_for('admin.user_status', user_id=u.id) }}"{% if u.is_active %} data-confirm="Disable {{ u.username }}? They'll be signed out immediately."{% endif %}>

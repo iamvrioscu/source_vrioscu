@@ -1,0 +1,12 @@
+<div class="report-gallery">
+  {% for name, page, title, description in [('cover',1,'The complete deliverable','Report identity, workflow, operator and generation time.'),('summary',3,'The whole run at a glance','10 endpoints. 8 passed. 2 marked for review.'),('endpoint',4,'Technical depth & visual evidence','DNS, TLS, HTTP, redirects, timings and the captured page.'),('review',10,'A finding that needs review','HTTP 403 recorded alongside a rendered challenge page.'),('ai',11,'AI Validation Insights','Assessment, observations, potential issues and recommended action.'),('ai-unavailable',19,'An explicit unavailable state','AI analysis unavailable; deterministic evidence retained.')] %}
+  <figure class="report-card">
+    <a class="report-image-link" href="{{ url_for('static', filename='img/reports/' ~ name ~ '-large.webp') }}" data-report-page data-report-title="Page {{ page }} — {{ title }}" aria-label="Enlarge report page {{ page }}: {{ title }}">
+      <img src="{{ url_for('static', filename='img/reports/' ~ name ~ '.webp') }}" width="900" height="1273" alt="Actual VRIOSCU report page {{ page }}: {{ description }}" loading="lazy">
+      <span class="image-expand">Inspect page <span aria-hidden="true">↗</span></span>
+    </a>
+    <figcaption><span class="eyebrow">PAGE {{ '%02d' % page }} / 23</span><h3>{{ title }}</h3><p>{{ description }}</p></figcaption>
+  </figure>
+  {% endfor %}
+</div>
+{% include 'partials/report_lightbox.html' %}

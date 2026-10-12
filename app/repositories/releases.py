@@ -5,7 +5,7 @@ CHANNELS = ("PUBLIC_BETA", "STABLE", "INTERNAL", "DEV")
 PUBLIC_CHANNELS = ("PUBLIC_BETA", "STABLE")
 FIELDS = ("version", "channel", "release_date", "release_notes_url", "download_url",
           "installer_filename", "sha256", "file_size_bytes", "is_mandatory",
-          "minimum_supported_version", "is_signed", "is_published")
+          "minimum_supported_version", "is_signed", "is_published", "storage_key", "uploaded_at")
 
 
 class ReleaseRepository:
@@ -17,7 +17,7 @@ class ReleaseRepository:
         return self.conn.execute(
             f"INSERT INTO releases ({', '.join(FIELDS)}, created_by, created_at, updated_at)"
             f" VALUES ({', '.join('?' * len(FIELDS))}, ?, ?, ?)",
-            (*[data[f] for f in FIELDS], created_by, ts, ts)).lastrowid
+            (*[data.get(f) for f in FIELDS], created_by, ts, ts)).lastrowid
 
     def update(self, release_id, data: dict):
         fields = [f for f in FIELDS if f in data]  # fixed allowlist

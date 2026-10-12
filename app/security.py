@@ -241,5 +241,8 @@ def apply_security_headers(resp):
         h["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
     if getattr(g, "user", None) or request.path.startswith(("/account", "/admin", "/api/v1/me", "/api/v1/admin")):
         h["Cache-Control"] = "no-store"
+    if request.endpoint != 'static':
+        # Public pages contain CSRF tokens, launch settings and live release state.
+        h['Cache-Control'] = 'no-store'
     h.pop("Server", None)
     return resp
