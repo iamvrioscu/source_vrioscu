@@ -20,26 +20,36 @@ variables win). In production put them in `/etc/vrioscu/vrioscu.env`
 | `LOG_LEVEL` | no | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 | `CORS_PUBLIC_ORIGINS` | no | empty | Comma-separated origins allowed to `GET /api/v1/releases*` |
 | `DOWNLOAD_ALLOWED_HOSTS` | recommended | empty | Comma-separated hosts allowed in release download URLs (e.g. `downloads.vrioscu.com`) |
+| `RELEASE_STORAGE_PATH` | production | private per-user development directory | Absolute persistent installer root outside source/static/temp; provision directories first |
+| `RELEASE_MAX_BYTES` | no | `2147483648` | Maximum installer bytes (up to 8 GiB); individual chunks stay at 8 MiB |
+| `RELEASE_MIN_FREE_BYTES` | no | `1073741824` | Minimum free bytes remaining after upload reservations |
+| `RELEASE_X_ACCEL` | no | `false` | Enable Nginx internal file delivery only with the matching private alias installed |
 
 ## Product (central configuration)
 
 | Variable | Default | Description |
 |---|---|---|
 | `PRODUCT_NAME` | `VRIOSCU` | Brand name everywhere |
-| `PRODUCT_VERSION` | `1.0.0` | Shown site-wide |
-| `RELEASE_CHANNEL` | `PUBLIC_BETA` | Channel the download page shows |
+| `PRODUCT_VERSION` | `1.0.0` | Legacy configured version; public availability uses database release metadata |
+| `RELEASE_CHANNEL` | `PUBLIC_BETA` | Preferred public release channel; falls back to the latest eligible public release |
 | `PUBLIC_BETA` | `true` | Shows Public Beta labelling and notices |
 | `WINDOWS_COMPATIBILITY` | `Windows 10 and Windows 11 (64-bit)` | **Confirm against tested platforms before launch** |
 | `INSTALLER_SIGNED` | `false` | `true` only when the installer is actually Authenticode-signed |
-| `DOWNLOAD_URL` | empty | Fallback HTTPS installer URL when no release is published in the database |
-| `RELEASE_NOTES_URL` | empty | Fallback release notes |
-| `INSTALLER_FILENAME` | empty | Fallback file name |
-| `INSTALLER_SHA256` | empty | Fallback checksum, 64 hex |
-| `INSTALLER_SIZE_BYTES` | empty | Fallback size |
+| `DOWNLOAD_URL` | empty | Legacy value; never exposes a public installer without a published database release |
+| `RELEASE_NOTES_URL` | empty | Legacy configured release notes |
+| `INSTALLER_FILENAME` | empty | Legacy configured filename |
+| `INSTALLER_SHA256` | empty | Legacy configured checksum, 64 hex |
+| `INSTALLER_SIZE_BYTES` | empty | Legacy configured size |
 | `SUPPORT_EMAIL` | empty | Shown on contact page if set; otherwise the form is the contact route |
 | `PRIVACY_EMAIL` | empty | Shown on privacy/contact pages if set |
 | `GENERAL_EMAIL` | empty | Shown on contact page if set |
-| `PRIVACY_NOTICE_VERSION` | `2026-10-01` | Recorded with each account's privacy acknowledgement. Change it when the notice changes |
+| `PRIVACY_NOTICE_VERSION` | `2026-10-12` | Recorded with privacy acknowledgements and launch consent. Update an existing deployment override to match the revised notice. |
 
-Prefer publishing releases through **Admin → Releases**; the `DOWNLOAD_*`/`INSTALLER_*`
-variables are a fallback only.
+Publish releases through **Admin → Releases**; the `DOWNLOAD_*`/`INSTALLER_*`
+variables are retained for compatibility, but no longer provide public downloads.
+The former `PUBLIC_DOWNLOADS_ENABLED` environment flag has no effect. Database publication is authoritative.
+
+Launch form visibility, registration controls and copy live in the database, managed
+under **Admin > Launch Interest & Subscribers**. Analytics requires visitor opt-in;
+there is no third-party service key or tracking configuration. UTC storage is
+converted to Asia/Kolkata for admin display.

@@ -284,7 +284,7 @@ class UserRepository:
             "u.is_active, "
             "u.created_at, "
             "u.last_login_at, "
-            "COALESCE(p.opted_in, 0) AS opted_in "
+            "COALESCE(p.opted_in, 0) AS product_updates "
             "FROM users u "
             "LEFT JOIN product_update_preferences p "
             "ON p.user_id = u.id"

@@ -3,6 +3,7 @@
 {% from 'partials/icons.html' import icon %}
 {% block content %}
 <header class="page-head"><div class="wrap">
+  <span class="eyebrow">SUPPORT / TALK TO THE TEAM</span>
   <h1>Contact and support</h1>
   <p class="lede">Questions about installing {{ product.name }}, your website account, reports or privacy. Messages go to the {{ product.name }} team.</p>
 </div></header>
@@ -33,7 +34,7 @@
     <h2>Before you write</h2>
     <ul>
       <li><a href="{{ url_for('public.documentation') }}#install">Installation guide</a></li>
-      <li><a href="{{ url_for('public.download') }}#verify">Verifying the checksum</a></li>
+      <li><a href="{{ url_for('public.download') }}#verify">Installer details</a></li>
       <li><a href="{{ url_for('public.documentation') }}#report">Reading the report</a></li>
     </ul>
     {% if product.support_email or product.privacy_email or product.general_email %}

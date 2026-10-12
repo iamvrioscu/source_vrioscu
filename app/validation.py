@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import ipaddress
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import date
@@ -55,13 +56,22 @@ def _clean_str(raw: Any, multiline: bool) -> str:
 
 
 def https_url_ok(url: str, allowed_hosts: list[str] | None = None) -> bool:
+    if any(c.isspace() or ord(c) < 32 for c in url):
+        return False
     try:
         p = urlparse(url)
+        p.port  # Reject malformed port strings as well as malformed addresses.
     except ValueError:
         return False
     if p.scheme != "https" or not p.hostname or p.username or p.password:
         return False
     host = p.hostname.lower()
+    try:
+        if not ipaddress.ip_address(host).is_global:
+            return False
+    except ValueError:
+        if '.' not in host or not re.fullmatch(r'[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?',host):
+            return False
     if host in {"localhost", "127.0.0.1", "0.0.0.0", "::1"} or host.endswith(".local") or host.endswith(".localhost"):
         return False
     if re.fullmatch(r"\d+\.\d+\.\d+\.\d+", host):

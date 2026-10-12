@@ -1,5 +1,10 @@
 # Backup and restore
 
+Direct uploads require **both database and installer backups**. The timer below
+backs up the database only. See [INSTALLER_STORAGE.md](INSTALLER_STORAGE.md) for
+the consistent installer bundle script, volume snapshots, restoration and
+retention. A database restore alone cannot recover missing installer files.
+
 ## How backups work
 
 `scripts/backup_db.py` uses SQLite's **online backup API**, so it produces a
@@ -30,11 +35,9 @@ also denies `.db`, `.gz` and `.sql` requests outright.
 A backup on the same disk doesn't survive losing the instance. Options:
 
 - **EBS snapshots** via Data Lifecycle Manager (whole volume, simplest).
-- **S3:** create a private bucket with Block Public Access, default encryption (SSE-S3 or SSE-KMS), versioning and a
-  lifecycle rule. Attach an instance role allowing only `s3:PutObject` on `arn:aws:s3:::<bucket>/vrioscu/*`.
-  Then add to the backup service:
-  `ExecStartPost=/usr/bin/aws s3 cp /var/backups/vrioscu/ s3://<bucket>/vrioscu/ --recursive --exclude "*" --include "vrioscu-*.db.gz"`
-  (requires the AWS CLI; no keys on disk, the role supplies credentials).
+- **Direct encrypted copies:** transfer completed DB/installer bundles to a
+  separately protected backup host over the existing SSH backup workflow.
+  This deployment does not require external object storage.
 
 Backups contain personal data (accounts, emails, messages). Restrict access accordingly.
 

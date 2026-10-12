@@ -22,7 +22,7 @@
   <tbody>
   {% for item in items %}
     <tr>
-      <td>{{ item.created_at|date }}</td>
+      <td>{{ item.created_at|datetime }}</td>
       <td>{{ item.username }}<br><a class="hint" href="mailto:{{ item.email }}">{{ item.email }}</a></td>
       <td>{{ item.submission_type|replace('_', ' ')|title }}</td>
       <td>{{ item.app_version or '—' }}</td>
@@ -40,7 +40,7 @@
           {% endfor %}
           </dl>
           <p>Client ID: <code>{{ item.client_submission_id }}</code></p>
-          {% if item.client_created_at %}<p>Client timestamp: {{ item.client_created_at }}</p>{% endif %}
+          {% if item.client_created_at %}<p>Client timestamp (IST): {{ item.client_created_at|datetime }}</p>{% endif %}
         </details>
       </td>
       <td>{{ item.metadata.get('os_name', '—') }} {{ item.metadata.get('os_release', '') }}<br>{{ item.metadata.get('architecture', '') }}</td>

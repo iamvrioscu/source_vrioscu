@@ -14,4 +14,8 @@ venv/
 *.log
 .coverage
 htmlcov/
+tmp/
+*.[eE][xX][eE]
+*.part
+installer-backups/
 !instance/.gitkeep

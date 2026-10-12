@@ -14,6 +14,9 @@ from .support import SupportRepository
 from .releases import ReleaseRepository
 from .rate_limits import RateLimitRepository
 from .audit import AuditRepository
+from .launch import LaunchRepository
+from .analytics import AnalyticsRepository
+from .uploads import UploadRepository
 
 
 class Repositories:
@@ -29,3 +32,6 @@ class Repositories:
         self.releases = ReleaseRepository(conn)
         self.rate_limits = RateLimitRepository(conn)
         self.audit = AuditRepository(conn)
+        self.launch = LaunchRepository(conn)
+        self.analytics = AnalyticsRepository(conn)
+        self.uploads = UploadRepository(conn)

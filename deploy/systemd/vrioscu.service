@@ -36,7 +36,7 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 CapabilityBoundingSet=
 AmbientCapabilities=
 SystemCallArchitectures=native
-ReadWritePaths=/var/lib/vrioscu
+ReadWritePaths=/var/lib/vrioscu /var/lib/vrioscu-releases
 
 [Install]
 WantedBy=multi-user.target

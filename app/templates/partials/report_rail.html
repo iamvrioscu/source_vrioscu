@@ -1,0 +1,17 @@
+<div class="report-rail" data-report-rail role="group" aria-label="Explore five sections of the actual validation report">
+  {% for artwork, preview, page, title, label, description in [
+    ('summary','summary',3,'Validation Overview','OVERVIEW','The whole run in context: 10 endpoints, eight passes and two results requiring review.'),
+    ('endpoint','endpoint',4,'Technical Validation','TECHNICAL','DNS, TLS, HTTP, redirects and render timings, recorded with the endpoint result.'),
+    ('capture','endpoint',4,'Visual Evidence','EVIDENCE','The actual browser capture from page 4, kept alongside its technical observations.'),
+    ('ai','ai',11,'AI Validation Insights','AI INSIGHTS','Evidence-driven assessment, observations and suggested actions for human review.'),
+    ('review','review',10,'Professional Report','THE REPORT','A detailed endpoint page brings the result, measurements and captured screen together.')
+  ] %}
+  <figure class="report-rail-card{% if loop.first %} is-active{% endif %}{% if artwork == 'ai' %} report-rail-card--ai{% endif %}" data-report-card>
+    <div class="rail-art"><img src="{{ url_for('static', filename='img/reports/' ~ artwork ~ '.webp') }}" width="900" height="{{ 506 if artwork == 'capture' else 1273 }}" alt="{{ 'Actual browser screenshot extracted from VRIOSCU report page 4' if artwork == 'capture' else 'Actual VRIOSCU report page ' ~ page ~ ': ' ~ title }}" loading="lazy"></div>
+    <button class="report-rail-select" type="button" data-report-select aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="rail-caption-{{ loop.index }}" aria-label="Expand {{ title }}" hidden><span class="rail-index" aria-hidden="true">{{ '%02d' % loop.index }}</span><span class="rail-label" aria-hidden="true">{{ label }}</span></button>
+    <figcaption class="rail-caption" id="rail-caption-{{ loop.index }}"><span class="rail-caption-kicker">ACTUAL REPORT / PAGE {{ '%02d' % page }}</span><h3>{{ title }}</h3><p>{{ description }}</p><a class="rail-explore" href="{{ url_for('static', filename='img/reports/' ~ preview ~ '-large.webp') }}" data-report-page data-report-title="{{ title }} — Page {{ page }} of 23" data-report-alt="Actual VRIOSCU report page {{ page }}: {{ title }}" aria-label="Explore {{ title }} at full size">Explore page <span aria-hidden="true">↗</span></a></figcaption>
+  </figure>
+  {% endfor %}
+</div>
+<div class="report-rail-guide"><span>VALIDATE → CAPTURE → ANALYZE → DOCUMENT</span><span>Hover, focus or tap a card. Explore to read the full page.</span></div>
+{% include 'partials/report_lightbox.html' %}

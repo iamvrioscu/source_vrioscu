@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from ..repositories.releases import PUBLIC_CHANNELS
-from ..validation import ValidationError, semver_tuple
+from ..validation import ValidationError, semver_tuple, https_url_ok
+from flask import current_app
+from .installers import InstallerStore
 
 PUBLIC_RELEASE_FIELDS = ("version", "channel", "release_date", "release_notes_url", "installer_filename",
                          "sha256", "file_size_bytes", "is_mandatory", "minimum_supported_version",
@@ -11,6 +13,7 @@ PUBLIC_RELEASE_FIELDS = ("version", "channel", "release_date", "release_notes_ur
 
 def check_release(data: dict) -> dict:
     data = dict(data)
+    data["sha256"] = data.get("sha256") or None
     for k in ("is_mandatory", "is_signed", "is_published"):
         data[k] = 1 if data.get(k) else 0
     if data.get("minimum_supported_version"):
@@ -29,23 +32,21 @@ def public_release(r: dict, download_path: str | None = None) -> dict:
     return out
 
 
-def current_download(repos, product) -> dict | None:
-    """Published release for the configured channel, else the .env fallback, else None."""
+def published_downloads(repos, allowed_hosts=None):
+    return [r for r in repos.releases.list(channels=PUBLIC_CHANNELS,published_only=True)
+            if (InstallerStore(current_app.config['SETTINGS']).available(r) if r.get('storage_key')
+                else https_url_ok(r['download_url'],allowed_hosts or None))]
+
+
+def channel_download(repos, channel, allowed_hosts=None):
+    return next((r for r in published_downloads(repos,allowed_hosts) if r['channel']==channel),None)
+
+
+def current_download(repos, product, allowed_hosts=None) -> dict | None:
+    """Database publication is authoritative. Prefer configured public channel."""
     channel = product.channel if product.channel in PUBLIC_CHANNELS else "PUBLIC_BETA"
-    rel = repos.releases.latest(channel)
-    if rel:
-        rel["source"] = "database"
-        return rel
-    if product.download_url:
-        return {
-            "id": None, "version": product.version, "channel": product.channel,
-            "release_date": "", "release_notes_url": product.release_notes_url,
-            "download_url": product.download_url, "installer_filename": product.installer_filename,
-            "sha256": product.installer_sha256, "file_size_bytes": product.installer_size_bytes,
-            "is_mandatory": 0, "minimum_supported_version": "", "is_signed": int(product.installer_signed),
-            "source": "config",
-        }
-    return None
+    candidates = published_downloads(repos,allowed_hosts)
+    return next((r for r in candidates if r['channel']==channel),next(iter(candidates),None))
 
 
 def human_size(n) -> str:

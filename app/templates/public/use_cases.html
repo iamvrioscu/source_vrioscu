@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <header class="page-head"><div class="wrap">
+  <span class="eyebrow">USE CASES / EVIDENCE WITH A PURPOSE</span>
   <h1>Where repeatable evidence matters</h1>
   <p class="lede">{{ product.name }} fits work where someone has to confirm endpoints are reachable from a specific place and keep a record that proves it.</p>
 </div></header>
@@ -29,7 +30,7 @@
 <section class="section section--surface"><div class="wrap">
   <div class="notice notice--info">
     {% from 'partials/icons.html' import icon %}{{ icon('info') }}
-    <div><h2>Have a different use?</h2><p>Tell us how you use {{ product.name }}. Public Beta feedback decides what we improve next.</p>
+    <div><h2>Have a different use?</h2><p>Tell us how you would use {{ product.name }}. Your feedback helps shape the upcoming Windows release.</p>
     <div class="btn-row"><a class="btn btn--quiet btn--small" href="{{ url_for('account.feedback') }}">Send feedback</a></div></div>
   </div>
 </div></section>

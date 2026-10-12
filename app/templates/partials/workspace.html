@@ -1,0 +1,34 @@
+<div class="workspace-demo" data-workspace>
+  <div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>VRIOSCU / Evidence workspace</span><span class="demo-label">WALKTHROUGH</span></div>
+  <div class="workspace-inner">
+    <div class="workspace-heading"><div><span class="eyebrow">RECORDED SAMPLE RUN</span><h3>Every result. In context.</h3></div><span class="status-pill"><span></span>Report complete</span></div>
+    <div class="endpoint-field"><span aria-hidden="true">↗</span><code>https://www.google.com</code><span class="endpoint-method">HTTPS</span></div>
+    <div class="workspace-tabs" role="tablist" aria-label="Explore the evidence workflow">
+      {% for key, label in [('validate','Validate'),('capture','Capture'),('analyze','Analyze'),('document','Document')] %}
+      <button type="button" role="tab" id="tab-{{ key }}" aria-controls="panel-{{ key }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}" data-step="{{ key }}"><span>0{{ loop.index }}</span>{{ label }}</button>
+      {% endfor %}
+    </div>
+    <div class="workspace-panel" id="panel-validate" role="tabpanel" aria-labelledby="tab-validate" tabindex="0">
+      <div class="validation-line"><span class="check-node">✓</span><div><strong>DNS resolution</strong><small>Endpoint address resolved</small></div><code>46 ms</code></div>
+      <div class="validation-line"><span class="check-node">✓</span><div><strong>TLS connection</strong><small>Recorded certificate status: valid</small></div><code>TLS 1.3</code></div>
+      <div class="validation-line"><span class="check-node">✓</span><div><strong>HTTP response</strong><small>HTTP/2 · text/html</small></div><code class="text-green">200 OK</code></div>
+      <div class="technical-mini"><div><small>REDIRECT CHAIN</small><strong>1 hop <span>→</span> final URL</strong></div><div><small>RENDER TIME</small><strong>5.78<span>s</span></strong></div></div>
+    </div>
+    <div class="workspace-panel" id="panel-capture" role="tabpanel" aria-labelledby="tab-capture" tabindex="0" hidden>
+      <img class="capture-preview" src="{{ url_for('static', filename='img/reports/capture.webp') }}" width="900" height="506" alt="Actual Google homepage screenshot captured in the supplied VRIOSCU report" loading="lazy">
+      <div class="capture-caption"><span>Browser viewport · 1366 × 768</span><span class="text-green">Evidence captured ✓</span></div>
+      <p class="demo-note">Actual capture from page 4 of the supplied report.</p>
+    </div>
+    <div class="workspace-panel" id="panel-analyze" role="tabpanel" aria-labelledby="tab-analyze" tabindex="0" hidden>
+      <div class="analysis-counts"><div><strong>10</strong><span>ENDPOINTS</span></div><div><strong class="text-green">8</strong><span>PASSED</span></div><div><strong class="text-amber">2</strong><span>REVIEW</span></div></div>
+      <div class="finding"><span class="finding-symbol">!</span><div><strong>AI interpretation &middot; evidence #04</strong><p>For chatgpt.com, the report explains that the endpoint was reachable and rendered content, but HTTP 403 requires human review.</p></div></div>
+      <p class="demo-note">AI Validation Insights are recorded in this sample report. No live AI analysis is running.</p>
+    </div>
+    <div class="workspace-panel document-panel" id="panel-document" role="tabpanel" aria-labelledby="tab-document" tabindex="0" hidden>
+      <img src="{{ url_for('static', filename='img/reports/cover.webp') }}" width="900" height="1273" alt="Cover of the actual 23-page VRIOSCU Validation and Evidence Report" loading="lazy">
+      <div><span class="eyebrow">THE FINISHED ARTIFACT</span><h4>Evidence you can hand over.</h4><p>23 pages. Run context, validation summary, technical metrics and visual captures.</p><a href="{{ url_for('public.reports') }}">Inspect the sample report ↗</a></div>
+    </div>
+    <div class="workspace-bottom"><a class="workspace-output" href="{{ url_for('public.reports') }}"><img src="{{ url_for('static',filename='img/reports/cover.webp') }}" width="40" height="57" alt="Actual report cover"><span><strong>23-page Validation & Evidence Report ↗</strong><small>12 OCT 2026 · HISTORICAL SAMPLE</small></span></a><button type="button" data-play hidden>Play walkthrough <span aria-hidden="true">▷</span></button></div>
+  </div>
+  <p class="workspace-disclaimer">Interactive product illustration using supplied report data. No live endpoint checks.</p>
+</div>

@@ -2,6 +2,11 @@
 
 Target: one existing EC2 instance (Ubuntu 22.04/24.04 LTS assumed), nginx, gunicorn, SQLite.
 
+For direct installer uploads, first verify the actual OS, volume, free bytes and
+service account and follow [INSTALLER_STORAGE.md](INSTALLER_STORAGE.md). Its
+private directory/group setup, required storage environment variable, scoped
+upload limits and internal Nginx alias supplement these deployment steps.
+
 ```
 Internet → nginx :443 (TLS) → gunicorn 127.0.0.1:8000 → Flask → SQLite (/var/lib/vrioscu)
 ```
@@ -13,8 +18,8 @@ Internet → nginx :443 (TLS) → gunicorn 127.0.0.1:8000 → Flask → SQLite (
   Port 8000 must **not** be open.
 - **Elastic IP** attached; DNS `A` records for `vrioscu.com` and `www.vrioscu.com` point to it.
 - **EBS:** encryption enabled; consider a Data Lifecycle Manager snapshot policy as an extra layer.
-- **IAM:** the instance needs no credentials to run the site. Only add a narrowly scoped role if you
-  ship backups to S3 (see BACKUP_RESTORE.md). Never put AWS keys in `.env` or code.
+- **IAM:** the instance needs no AWS credentials to run the site or store installers.
+  Use encrypted EBS snapshots or direct encrypted backup copies. Never put AWS keys in `.env` or code.
 
 ## 1. System packages and user
 
@@ -57,7 +62,9 @@ SECRET_KEY=<generated>
 BASE_URL=https://vrioscu.com
 DATABASE_PATH=/var/lib/vrioscu/vrioscu.db
 TRUSTED_PROXY_COUNT=1
-DOWNLOAD_ALLOWED_HOSTS=<host serving the installer>
+RELEASE_STORAGE_PATH=/var/lib/vrioscu-releases
+RELEASE_X_ACCEL=true
+# DOWNLOAD_ALLOWED_HOSTS optionally restricts legacy externally hosted releases.
 WINDOWS_COMPATIBILITY=<confirmed platforms>
 INSTALLER_SIGNED=false
 ```
@@ -105,7 +112,9 @@ sudo systemctl list-timers | grep certbot     # auto-renewal
 ```
 
 nginx serves `/static/`, denies dotfiles and database/backup/source extensions,
-caps request bodies at 64 KB, overwrites `X-Forwarded-For` and rate-limits auth pages.
+caps normal request bodies at 64 KiB (installer chunks have a scoped 8 MiB limit),
+overwrites `X-Forwarded-For` and rate-limits auth pages. Merge the changed proxy
+snippet as well: its read timeout now inherits from the server/upload location.
 
 ## 7. Verify
 

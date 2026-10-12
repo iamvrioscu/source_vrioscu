@@ -3,7 +3,7 @@
 bind = "127.0.0.1:8000"
 workers = 3                 # (2 x vCPU) + 1 is typical; SQLite in WAL mode handles this comfortably
 worker_class = "sync"
-timeout = 30
+timeout = 300  # bounded 8 MiB chunks and streaming integrity verification
 graceful_timeout = 20
 keepalive = 5
 max_requests = 2000         # recycle workers periodically

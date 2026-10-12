@@ -1,47 +1,5 @@
 {% extends 'base.html' %}
-{% from 'partials/icons.html' import icon %}
 {% block content %}
-<header class="page-head"><div class="wrap">
-  <h1>{{ product.name }} {{ product.version }} {{ product.channel_label }}</h1>
-  <p class="lede">The full validation, capture, analysis and reporting workflow, released early so it can be shaped by the people using it.</p>
-  <div class="btn-row"><a class="btn" href="{{ url_for('public.download') }}">{{ icon('download') }}Download the beta</a><a class="btn btn--quiet" href="{{ url_for('auth.register') }}">Create an account</a></div>
-</div></header>
-<section class="section"><div class="wrap split">
-  <div class="prose">
-    <h2>What "Public Beta" means</h2>
-    <p>The beta includes the product's four capabilities: validate, capture, analyze and document. It's suitable for real work, but you may find rough edges, and behaviour or report layout may change before a stable release.</p>
-    <p>Review each report before relying on it, as you would with any tool's output.</p>
-
-    <h2 id="signing">About installer signing</h2>
-    {% if product.installer_signed %}
-    <p>The {{ product.version }} installer is digitally signed. You can check the signature in the file's properties in Windows before running it.</p>
-    {% else %}
-    <p>The {{ product.version }} installer is not yet digitally signed. Because of that, Windows SmartScreen or your organisation's security software may warn that the publisher is unrecognised, or block the file.</p>
-    <p>Those warnings are doing their job. Don't turn off SmartScreen, Smart App Control, Microsoft Defender or any other protection to install {{ product.name }}. Instead:</p>
-    <ul>
-      <li>Download only from this website.</li>
-      <li>Compare the file's SHA-256 checksum with the one on the <a href="{{ url_for('public.download') }}">download page</a>. If they don't match, delete the file.</li>
-      <li>On a managed work device, follow your organisation's software approval process. Your IT team may need to approve it.</li>
-    </ul>
-    {% endif %}
-
-    <h2>What we'd like feedback on</h2>
-    <ul>
-      <li>Installation and first run</li>
-      <li>Setting up and running a validation</li>
-      <li>Whether reports are clear enough to hand to someone else</li>
-      <li>Anything that didn't work as you expected</li>
-    </ul>
-    <p>Signed-in users can <a href="{{ url_for('account.feedback') }}">send feedback</a> from their account. For problems that block you, <a href="{{ url_for('public.contact') }}">contact support</a>.</p>
-  </div>
-  <aside class="split__aside aside-box" aria-label="Beta details">
-    <h2>Beta details</h2>
-    <dl class="facts">
-      <div><dt>Version</dt><dd>{{ product.version }}</dd></div>
-      <div><dt>Channel</dt><dd><span class="badge badge--beta">{{ product.channel_label }}</span></dd></div>
-      <div><dt>Platform</dt><dd>{{ product.windows_compatibility }}</dd></div>
-      <div><dt>Installer signature</dt><dd>{% if product.installer_signed %}<span class="badge badge--pass">Signed</span>{% else %}<span class="badge badge--warn">Not signed yet</span>{% endif %}</dd></div>
-    </dl>
-  </aside>
-</div></section>
+<header class="page-head"><div class="wrap"><span class="eyebrow">OFFICIAL RELEASE INFORMATION</span><h1>Good evidence takes care.<br>So does a good release.</h1><p class="lede">{% if public_release %}VRIOSCU {{ public_release.version }} is published for Windows.{% else %}VRIOSCU for Windows is coming soon.{% endif %} This page explains the release process and where official availability will be announced.</p><div class="btn-row"><a class="btn" href="{{ url_for('public.download') }}">Windows release status ↗</a><a class="btn btn--quiet" href="{{ url_for('public.reports') }}">See the sample report</a></div></div></header>
+<section class="section"><div class="wrap split"><div class="prose"><h2>Current availability</h2><p>{% if public_release %}The published installer and its release metadata are available on the Windows download page.{% else %}The Windows application is not yet publicly available.{% endif %} Product previews and the supplied sample report demonstrate the workflow; they are not a public release announcement.</p><h2>What to expect from a beta</h2><p>When published, an early release may have rough edges, and behavior or report layout may change before a stable version. Review the recorded results before relying on a report.</p><h2 id="signing">Installer details at release</h2><p>The official download page will publish availability, the release notes and its signing status. Follow your organization's software policy when installing on a managed device.</p><h2>Feedback and support</h2><p>You can already use your website account to <a href="{{ url_for('account.feedback') }}">send feedback</a>. For product, account or availability questions, use the <a href="{{ url_for('public.contact') }}">contact form</a>.</p></div><aside class="aside-box"><h2>Release status</h2><dl class="facts"><div><dt>Windows application</dt><dd><span class="coming-pill">{{ 'v' ~ public_release.version if public_release else 'Coming soon' }}</span></dd></div><div><dt>Compatibility</dt><dd>{{ product.windows_compatibility }}</dd></div><div><dt>Public installer</dt><dd>{{ 'Available on the Windows page' if public_release else 'Not available' }}</dd></div><div><dt>Release information</dt><dd>Published here when ready</dd></div></dl></aside></div></section>
 {% endblock %}

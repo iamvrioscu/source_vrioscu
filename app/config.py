@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlparse
@@ -102,6 +103,10 @@ class Settings:
     cors_public_origins: list[str]
     download_allowed_hosts: list[str]
     product: Product
+    release_storage_path: Path
+    release_max_bytes: int
+    release_min_free_bytes: int
+    release_x_accel: bool
     extra: dict = field(default_factory=dict)
 
     @property
@@ -129,10 +134,14 @@ def load_settings(overrides: dict | None = None) -> Settings:
 
     base_url = (overrides.get("base_url") or _env("BASE_URL", "http://127.0.0.1:5000")).rstrip("/")
     size_raw = _env("INSTALLER_SIZE_BYTES")
+    storage_raw = overrides.get('release_storage_path') or _env('RELEASE_STORAGE_PATH')
+    if env == 'production' and not storage_raw:
+        raise ConfigError('Set RELEASE_STORAGE_PATH after verifying the persistent server filesystem')
+    local_data = Path(os.environ.get('LOCALAPPDATA') or Path.home() / '.local' / 'share')
 
     product = Product(
         name=_env("PRODUCT_NAME", "VRIOSCU"),
-        tagline="Validate. Capture. Document.",
+        tagline="Validate. Capture. Analyze. Document.",
         positioning="Endpoint Validation & Evidence Capture",
         website_url=base_url,
         version=_env("PRODUCT_VERSION", "1.0.0"),
@@ -148,7 +157,7 @@ def load_settings(overrides: dict | None = None) -> Settings:
         support_email=_env("SUPPORT_EMAIL"),
         privacy_email=_env("PRIVACY_EMAIL"),
         general_email=_env("GENERAL_EMAIL"),
-        privacy_notice_version=_env("PRIVACY_NOTICE_VERSION", "2026-10-01"),
+        privacy_notice_version=_env("PRIVACY_NOTICE_VERSION", "2026-10-12"),
     )
 
     settings = Settings(
@@ -165,6 +174,12 @@ def load_settings(overrides: dict | None = None) -> Settings:
         cors_public_origins=_list("CORS_PUBLIC_ORIGINS"),
         download_allowed_hosts=[h.lower() for h in _list("DOWNLOAD_ALLOWED_HOSTS")],
         product=product,
+        release_storage_path=Path(storage_raw or
+                                  (db_path.parent / 'installers' if env == 'test' else
+                                   local_data / 'VRIOSCU' / 'WebsiteReleases')),
+        release_max_bytes=int(overrides.get('release_max_bytes', _int('RELEASE_MAX_BYTES', 2 * 1024 ** 3))),
+        release_min_free_bytes=int(overrides.get('release_min_free_bytes', _int('RELEASE_MIN_FREE_BYTES', 1024 ** 3))),
+        release_x_accel=overrides.get('release_x_accel', _bool('RELEASE_X_ACCEL', False)),
     )
     validate_settings(settings)
     return settings
@@ -174,6 +189,10 @@ def validate_settings(s: Settings) -> None:
     """Refuse to start with unsafe production configuration."""
     if s.env not in {"development", "test", "production"}:
         raise ConfigError("APP_ENV must be development, test or production")
+    if not s.release_storage_path.is_absolute() or s.release_storage_path.resolve().is_relative_to(BASE_DIR.resolve()):
+        raise ConfigError('RELEASE_STORAGE_PATH must be an absolute private directory outside the checkout')
+    if not 128 <= s.release_max_bytes <= 8 * 1024 ** 3 or s.release_min_free_bytes < 0:
+        raise ConfigError('Invalid installer size or free-space limit')
     if s.product.channel not in {"PUBLIC_BETA", "STABLE", "INTERNAL", "DEV"}:
         raise ConfigError("RELEASE_CHANNEL is not a valid channel")
     if s.product.download_url and urlparse(s.product.download_url).scheme != "https":
@@ -182,6 +201,9 @@ def validate_settings(s: Settings) -> None:
         raise ConfigError("INSTALLER_SHA256 must be 64 hex characters")
 
     if s.is_production:
+        for temporary in (Path(tempfile.gettempdir()), Path('/var/tmp')):
+            if s.release_storage_path.resolve().is_relative_to(temporary.resolve()):
+                raise ConfigError('Installer storage must not be temporary')
         if s.secret_key.lower() in INSECURE_SECRET_VALUES or len(s.secret_key) < 32:
             raise ConfigError("SECRET_KEY must be set to a random value of at least 32 characters")
         if not s.https:

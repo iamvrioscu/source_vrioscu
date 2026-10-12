@@ -10,7 +10,7 @@ Work through this before pointing `vrioscu.com` at the server.
 - [ ] `/etc/vrioscu/vrioscu.env` is `root:vrioscu 0640`; no `.env` in the repo
 - [ ] **Confirm `WINDOWS_COMPATIBILITY`** matches platforms you have actually tested
 - [ ] `INSTALLER_SIGNED` reflects reality (`false` for the unsigned 1.0.0 beta)
-- [ ] Installer hosted at HTTPS; `DOWNLOAD_ALLOWED_HOSTS` set to that host
+- [ ] Private EC2 installer storage provisioned; upload, publication and HTTPS download verified (INSTALLER_STORAGE.md)
 - [ ] Release 1.0.0 created in Admin → Releases with the **real** SHA-256 and size, then published
 - [ ] Downloaded the file via the site and confirmed `Get-FileHash` matches the published value
 - [ ] Real `SUPPORT_EMAIL` / `PRIVACY_EMAIL` set, or deliberately left empty (contact form is then the route)
@@ -26,7 +26,7 @@ Work through this before pointing `vrioscu.com` at the server.
 - [ ] `curl -sI https://vrioscu.com` shows HSTS, CSP, X-Frame-Options, nosniff, Referrer-Policy
 - [ ] `/static/../instance/vrioscu.db`, `/.env`, `/vrioscu.db` all return 404
 - [ ] `vrioscu-backup.timer` enabled; one manual backup taken and **test-restored**
-- [ ] Off-host backup in place (EBS snapshot policy or S3)
+- [ ] Off-host backup in place (encrypted EBS snapshots or direct encrypted bundle copy; include DB and installers)
 
 ## Functional smoke test (production, by hand)
 
