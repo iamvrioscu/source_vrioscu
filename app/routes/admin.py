@@ -46,6 +46,7 @@ def dashboard():
     stats = {
         "users": r.users.count(), "subscribers": r.preferences.count_subscribers(),
         "feedback_new": r.feedback.count("new"), "support_new": r.support.count("new"),
+        "desktop_submissions_new": r.desktop_submissions.count("new"),
         "sessions": r.sessions.count_active(),
         "releases_published": len(r.releases.list(published_only=True)),
     }
@@ -124,6 +125,42 @@ def support_status(item_id):
             abort(404)
         _audit("support.status", f"support:{item_id}", status=status)
     return redirect(url_for("admin.support", status=request.form.get("filter") or None), 303)
+
+
+@bp.get("/desktop-submissions")
+@admin_required
+def desktop_submissions():
+    status = request.args.get("status")
+    if status and status not in ("new", "reviewed", "closed"):
+        abort(400, description="Unknown desktop submission status.")
+    items = g.repos.desktop_submissions.list(status=status, limit=200)
+    return _render(
+        "admin/desktop_submissions.html",
+        page_title="Desktop submissions",
+        items=items,
+        status=status,
+        statuses=("new", "reviewed", "closed"),
+    )
+
+
+@bp.post("/desktop-submissions/<int:item_id>")
+@admin_required
+def desktop_submission_status(item_id):
+    status = request.form.get("status")
+    if status not in ("new", "reviewed", "closed"):
+        abort(400, description="Unknown desktop submission status.")
+    with transaction(g.db):
+        if not g.repos.desktop_submissions.set_status(item_id, status):
+            abort(404)
+        _audit(
+            "desktop_submission.status",
+            f"desktop_submission:{item_id}",
+            status=status,
+        )
+    return redirect(
+        url_for("admin.desktop_submissions", status=request.form.get("filter") or None),
+        303,
+    )
 
 
 @bp.get("/subscribers")

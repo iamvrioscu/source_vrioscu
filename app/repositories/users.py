@@ -125,6 +125,17 @@ class UserRepository:
             is not None
         )
 
+    def update_username(self, user_id, username):
+        """Update the username belonging to an existing user."""
+        self.conn.execute(
+            """
+            UPDATE users
+            SET username = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (username, now_iso(), user_id),
+        )
+
     def update_profile(self, user_id, **fields):
         allowed = {
             key: value

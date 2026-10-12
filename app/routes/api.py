@@ -3,18 +3,22 @@
 Authentication: the session cookie. Unsafe methods require the
 X-CSRF-Token header (value from GET /api/v1/me or the page's meta tag).
 """
+import json
 import logging
+import re
+import secrets
 
 from flask import Blueprint, abort, current_app, g, jsonify, request, url_for
 
 from ..db import transaction
-from ..forms import FEEDBACK, PROFILE_UPDATE, SUPPORT
+from ..forms import FEEDBACK, PROFILE_UPDATE, REGISTER, SUPPORT
 from ..logging_setup import log_event
 from ..repositories.feedback import STATUSES as FEEDBACK_STATUSES
 from ..repositories.releases import CHANNELS, PUBLIC_CHANNELS
 from ..repositories.support import STATUSES as SUPPORT_STATUSES
-from ..security import admin_required, check_rate, csrf_token, login_required
-from ..services.auth import public_user
+from ..security import admin_required, check_rate, csrf_token, desktop_credential_required, login_required
+from ..services import auth as auth_service
+from ..services.auth import hash_password, public_user, token_hash
 from ..services.releases import current_download, public_release
 from ..validation import ValidationError, semver_tuple, validate
 from .admin import export_response, save_release
@@ -46,6 +50,167 @@ def _cors(resp):
         resp.headers["Access-Control-Allow-Origin"] = origin
         resp.headers["Vary"] = "Origin"
     return resp
+
+
+
+# ---------------------------------------------------------------- desktop registration
+@bp.put("/users/username")
+@desktop_credential_required
+def desktop_update_username():
+    data = _json_body()
+    if not isinstance(data.get("username"), str):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "A username is required.",
+            "fields": {"username": "Enter a valid username."},
+            "request_id": g.get("request_id"),
+        }), 422
+
+    username_field = next(
+        (field for field in REGISTER if field.name == "username"), None
+    )
+    if username_field is None:
+        raise RuntimeError("Username validation field is not configured.")
+
+    try:
+        clean = validate({"username": data["username"]}, [username_field])
+    except ValidationError as exc:
+        return _invalid(exc)
+
+    username = clean["username"]
+    user_id = g.desktop_user["user_id"]
+
+    if g.repos.users.exists(username=username, exclude_id=user_id):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "That username is already taken.",
+            "fields": {"username": "Choose another username."},
+            "request_id": g.get("request_id"),
+        }), 422
+
+    try:
+        with transaction(g.db):
+            g.repos.users.update_username(user_id, username)
+    except Exception as exc:
+        # SQLite uniqueness is the final protection against concurrent requests.
+        import sqlite3
+        if isinstance(exc, sqlite3.IntegrityError):
+            return jsonify(error={
+                "code": "validation_failed",
+                "message": "That username is already taken.",
+                "fields": {"username": "Choose another username."},
+                "request_id": g.get("request_id"),
+            }), 422
+        raise
+
+    return jsonify(ok=True, username=username), 200
+
+
+@bp.put("/users/preferences")
+@desktop_credential_required
+def desktop_update_preferences():
+    data = _json_body()
+
+    if not isinstance(data.get("product_updates"), bool):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "product_updates must be true or false.",
+            "fields": {
+                "product_updates": "Provide a boolean value."
+            },
+            "request_id": g.get("request_id"),
+        }), 422
+
+    enabled = data["product_updates"]
+    user_id = g.desktop_user["user_id"]
+    settings = current_app.config["SETTINGS"]
+
+    with transaction(g.db):
+        g.repos.preferences.set_updates(
+            user_id,
+            enabled,
+            settings.product.privacy_notice_version,
+        )
+
+    return jsonify(ok=True, product_updates=enabled), 200
+
+
+@bp.post("/users/register")
+def desktop_register():
+    check_rate("desktop_register", 5, 3600)
+    data = _json_body()
+
+    if data.get("accept_privacy") is not True:
+        return jsonify(
+            error={
+                "code": "validation_failed",
+                "message": "Privacy consent is required.",
+                "fields": {"accept_privacy": "Privacy consent is required."},
+                "request_id": g.get("request_id"),
+            }
+        ), 422
+
+    fields = [f for f in REGISTER if f.name != "password"]
+    try:
+        clean = validate(data, fields)
+    except ValidationError as exc:
+        return _invalid(exc)
+
+    required = ("username", "email", "first_name", "last_name", "country", "purpose")
+    missing = [name for name in required if not clean.get(name)]
+    if missing:
+        return jsonify(
+            error={
+                "code": "validation_failed",
+                "message": "Required registration fields are missing.",
+                "fields": {name: "This field is required." for name in missing},
+                "request_id": g.get("request_id"),
+            }
+        ), 422
+
+    clean["accept_privacy"] = True
+    clean["password"] = secrets.token_urlsafe(48)
+    raw_credential = secrets.token_urlsafe(32)
+    settings = current_app.config["SETTINGS"]
+
+    try:
+        with transaction(g.db):
+            if g.repos.users.exists(username=clean["username"]):
+                raise ValidationError({"username": "That username is taken. Choose another."})
+            if g.repos.users.exists(email=clean["email"]):
+                raise ValidationError({"email": "An account with this email already exists."})
+
+            user_id = g.repos.users.create(
+                username=clean["username"],
+                email=clean["email"],
+                password_hash=hash_password(clean["password"]),
+                first_name=clean["first_name"],
+                last_name=clean["last_name"],
+                country=clean["country"],
+                purpose=clean["purpose"],
+            )
+
+            version = settings.product.privacy_notice_version
+            g.repos.preferences.record_consent(
+                user_id, "privacy_notice", True, version
+            )
+            g.repos.preferences.set_updates(
+                user_id, bool(clean.get("product_updates")), version
+            )
+            g.repos.desktop_credentials.create(
+                user_id=user_id,
+                token_hash=token_hash(raw_credential),
+            )
+    except ValidationError as exc:
+        return _invalid(exc)
+
+    log_event(log, logging.INFO, "desktop.registration_succeeded", user_id=user_id)
+    return jsonify(
+        ok=True,
+        message="Registration successful.",
+        user_id=user_id,
+        desktop_credential=raw_credential,
+    ), 201
 
 
 # ---------------------------------------------------------------- public
@@ -98,6 +263,161 @@ def create_support():
     with transaction(g.db):
         rid = g.repos.support.create(user_id=(g.user or {}).get("id"), **data)
     return jsonify(support_request={"id": rid, "status": "new"}), 201
+
+
+
+# ---------------------------------------------------------------- desktop submissions
+_DESKTOP_TYPES = {
+    "feedback": ("rating", "likes", "improvements", "suggestions"),
+    "bug_report": ("severity", "what_happened", "expected_behavior"),
+    "problem_report": ("category", "description"),
+    "feature_request": ("feature", "why_useful"),
+}
+_METADATA_FIELDS = {
+    "application_name", "application_version", "os_name", "os_release",
+    "os_version", "architecture", "python_version", "timestamp",
+}
+
+
+def _bounded_text(data, key, *, required=False, maximum=4000):
+    value = data.get(key, "")
+    if not isinstance(value, str):
+        raise ValueError(f"{key} must be text.")
+    value = value.strip()
+    if required and not value:
+        raise ValueError(f"{key} is required.")
+    if len(value) > maximum:
+        raise ValueError(f"{key} exceeds {maximum} characters.")
+    return value
+
+
+@bp.post("/desktop-submissions")
+@desktop_credential_required
+def create_desktop_submission():
+    check_rate(
+        "desktop_submission", 10, 3600,
+        key=str(g.desktop_user["user_id"]),
+    )
+    if request.content_length is not None and request.content_length > 65536:
+        return jsonify(error={
+            "code": "payload_too_large",
+            "message": "Submission payload exceeds 64 KB.",
+            "request_id": g.get("request_id"),
+        }), 413
+
+    data = _json_body()
+
+    kind = data.get("type")
+    if kind not in _DESKTOP_TYPES:
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "Unsupported submission type.",
+            "request_id": g.get("request_id"),
+        }), 422
+
+    client_id = data.get("id")
+    if (
+        not isinstance(client_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", client_id)
+    ):
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": "A valid submission ID is required.",
+            "request_id": g.get("request_id"),
+        }), 422
+
+    try:
+        details = {}
+        if kind == "feedback":
+            rating = data.get("rating")
+            if isinstance(rating, bool) or not isinstance(rating, int) or not 1 <= rating <= 5:
+                raise ValueError("rating must be an integer from 1 to 5.")
+            details["rating"] = rating
+            likes = data.get("likes", [])
+            if isinstance(likes, str):
+                likes = [likes]
+            if not isinstance(likes, list) or len(likes) > 30:
+                raise ValueError("likes must be a list of at most 30 items.")
+            if any(not isinstance(x, str) or len(x) > 200 for x in likes):
+                raise ValueError("Each likes item must be text of at most 200 characters.")
+            details["likes"] = [x.strip() for x in likes if x.strip()]
+            details["improvements"] = _bounded_text(data, "improvements", maximum=4000)
+            details["suggestions"] = _bounded_text(data, "suggestions", maximum=4000)
+
+        elif kind == "bug_report":
+            severity = data.get("severity")
+            if severity not in ("Low", "Medium", "High", "Critical"):
+                raise ValueError("severity must be Low, Medium, High, or Critical.")
+            details["severity"] = severity
+            details["what_happened"] = _bounded_text(
+                data, "what_happened", required=True, maximum=4000
+            )
+            details["expected_behavior"] = _bounded_text(
+                data, "expected_behavior", maximum=4000
+            )
+
+        elif kind == "problem_report":
+            details["category"] = _bounded_text(
+                data, "category", required=True, maximum=100
+            )
+            details["description"] = _bounded_text(
+                data, "description", required=True, maximum=4000
+            )
+
+        elif kind == "feature_request":
+            details["feature"] = _bounded_text(
+                data, "feature", required=True, maximum=1000
+            )
+            details["why_useful"] = _bounded_text(
+                data, "why_useful", required=True, maximum=4000
+            )
+
+        metadata = data.get("metadata", {})
+        if not isinstance(metadata, dict):
+            raise ValueError("metadata must be an object.")
+        clean_metadata = {}
+        for key in _METADATA_FIELDS:
+            if key in metadata:
+                value = metadata[key]
+                if not isinstance(value, str) or len(value) > 250:
+                    raise ValueError(f"metadata.{key} must be text of at most 250 characters.")
+                clean_metadata[key] = value
+
+        app_version = _bounded_text(data, "app_version", maximum=40)
+        if not app_version:
+            app_version = _bounded_text(clean_metadata, "application_version", maximum=40)
+
+        client_created_at = _bounded_text(data, "createdAt", maximum=40)
+        if client_created_at and not re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?",
+            client_created_at,
+        ):
+            raise ValueError("createdAt must be an ISO-style timestamp.")
+
+    except ValueError as exc:
+        return jsonify(error={
+            "code": "validation_failed",
+            "message": str(exc),
+            "request_id": g.get("request_id"),
+        }), 422
+
+    with transaction(g.db):
+        result = g.repos.desktop_submissions.create(
+            user_id=g.desktop_user["user_id"],
+            client_submission_id=client_id,
+            submission_type=kind,
+            details=details,
+            metadata=clean_metadata,
+            app_version=app_version,
+            client_created_at=client_created_at,
+        )
+
+    if result is None:
+        raise RuntimeError("Submission could not be retrieved after insertion.")
+
+    status_code = 200 if result["duplicate"] else 201
+    result.pop("duplicate", None)
+    return jsonify(ok=True, submission=result), status_code
 
 
 # ---------------------------------------------------------------- signed-in user
